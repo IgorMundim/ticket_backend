@@ -12,8 +12,6 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import os
 from pathlib import Path
 
-from utils.environment import get_env_variable, parse_comma_sep_str_to_list
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -32,9 +30,6 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
 ]
 
-CSRF_TRUSTED_ORIGINS: list[str] = parse_comma_sep_str_to_list(
-    get_env_variable("CSRF_TRUSTED_ORIGINS")
-)
 # Application definition
 
 INSTALLED_APPS = [
@@ -129,8 +124,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = "static/"
-
+STATICFILES_DIRS = [
+    BASE_DIR / "base_static",
+]
+STATIC_ROOT = BASE_DIR / "static"
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
+
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
