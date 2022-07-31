@@ -30,6 +30,7 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
 ]
 
+AUTH_USER_MODEL = "customer.Account"
 # Application definition
 
 INSTALLED_APPS = [
@@ -107,7 +108,6 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
