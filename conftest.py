@@ -1,1 +1,4 @@
-pytest_plugins = ["core.tests.event_fixtures",]
+pytest_plugins = [
+    "tests.event_fixtures",
+    "tests.customer_fixtures",
+]
