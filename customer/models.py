@@ -39,7 +39,7 @@ class Account(AbstractBaseUser):
     email = models.CharField(max_length=60, unique=True)
     date_joined = models.DateTimeField(auto_now_add=True, editable=False)
     profile_image = models.ImageField(
-        upload_to='core/covers/%Y/%m/%d/', blank=True, default=""
+        upload_to="core/covers/%Y/%m/%d/", blank=True, default=""
     )
     hide_email = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
@@ -61,27 +61,29 @@ class Account(AbstractBaseUser):
         verbose_name_plural = "account"
 
 
-
 class Telephone(models.Model):
-    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    account_id = models.ForeignKey(Account, on_delete=models.CASCADE,null=True)
     code = models.CharField(max_length=4)
     telephone = models.CharField(max_length=12)
     type = models.IntegerField(default=1)
-    description = models.CharField(max_length=150, blank=True,default="",)
+    description = models.CharField(
+        max_length=150,
+        blank=True,
+        default="",
+    )
 
     def __str__(self):
         return "%s-%s" % (self.code, self.telephone)
+
     class Meta:
         verbose_name = "telephone"
         verbose_name_plural = "phones"
 
-
-
 class Address(models.Model):
     account_id = models.ForeignKey(Account, on_delete=models.CASCADE,null=True)
     cep = models.CharField(max_length=8)
-    city = models.CharField(max_length=100)
     complement = models.CharField(max_length=150, blank=True, default="")
+    city = models.CharField(max_length=100, default="")
     district = models.CharField(max_length=100)
     municipality_IBGE = models.IntegerField()
     number = models.IntegerField()
@@ -89,14 +91,11 @@ class Address(models.Model):
     state = models.CharField(max_length=100)
     uf = models.CharField(max_length=2)
     uf_ibge = models.IntegerField()
-    type = models.IntegerField()
+    types = models.IntegerField()
 
-    def __str__(self):
-        return "Address"
     class Meta:
         verbose_name = "address"
-        verbose_name_plural = "Adresses"
-
+        verbose_name_plural = "adresses"
 
 
 class Producer(models.Model):
@@ -115,10 +114,10 @@ class Producer(models.Model):
 
     def __str__(self):
         return self.business_name
+
     class Meta:
         verbose_name = "producer"
         verbose_name_plural = "producers"
-
 
 
 class Customer(models.Model):
@@ -136,18 +135,19 @@ class Customer(models.Model):
         verbose_name_plural = "customers"
 
 
-
 class Request(models.Model):
     customer_id = models.ForeignKey(Customer, on_delete=models.CASCADE)
     date_joined = models.DateTimeField(
         verbose_name="date joined", auto_now_add=True, editable=False
     )
-    status = models.BooleanField()
-    type_of_payment = models.DecimalField(verbose_name="type of payment",max_digits=2,decimal_places=0)
+    is_paid = models.BooleanField()
+    type_of_payment = models.DecimalField(
+        verbose_name="type of payment", max_digits=2, decimal_places=0
+    )
 
     def __str__(self):
         return self.date_joined
+
     class Meta:
         verbose_name = "request"
         verbose_name_plural = "requests"
-

@@ -1,10 +1,6 @@
-from re import A
-
 from customer.models import Address, Producer, Request, Telephone
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
-
-# Create your models here.
 
 
 class Event(models.Model):
@@ -47,27 +43,27 @@ class Image(models.Model):
         odering = ["event_id"]
 
     def __str__(self):
-        return self.description
+        return self.alt_text
 
     class Meta:
         verbose_name = "image"
         verbose_name_plural = "images"
 
 
-class Category(MPTTModel):
-    event_category = models.ManyToManyField(
+class Category(models.Model):
+    events = models.ManyToManyField(
         Event,
     )
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=50, unique=True)
     is_active = models.BooleanField(default=True)
-    parent = TreeForeignKey(
-        "self",
-        on_delete=models.PROTECT,
-        related_name="children",
-        null=True,
-        blank=True,
-    )
+    # parent = TreeForeignKey(
+    #     "self",
+    #     on_delete=models.PROTECT,
+    #     related_name="children",
+    #     null=True,
+    #     blank=True,
+    # )
 
     def __str__(self):
         return self.name
@@ -124,7 +120,7 @@ class Ticket(models.Model):
     )
     code = models.CharField(max_length=255)
     is_student = models.BooleanField(default=False)
-    status = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.code
@@ -143,7 +139,7 @@ class Stock(models.Model):
         null=True,
     )
     units = models.IntegerField()
-    units.sold = models.IntegerField()
+    units_sold = models.IntegerField(default=0)
     last_checked = models.DateTimeField(
         verbose_name="last checked", auto_now=True
     )
