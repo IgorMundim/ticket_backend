@@ -1,6 +1,6 @@
 from cmath import sin
 
-from core.event.models import (
+from event.models import (
     Batck,
     Category,
     Event,

@@ -1,5 +1,12 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib import auth
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
+from django.core.exceptions import PermissionDenied
 from django.db import models
+from django.utils import timezone
 
 
 class AccountManage(BaseUserManager):
@@ -16,28 +23,24 @@ class AccountManage(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, username, password=None):
-        if not email:
-            raise ValueError("User must have an email address")
-        if not username:
-            raise ValueError("User must have username")
-        user = self.model(
+    def create_superuser(self, email, username, password):
+        user = self.create_user(
             email=self.normalize_email(email),
             username=username,
             password=password,
         )
-        user.is_admin = (True,)
-        user.is_staff = (True,)
-        user.is_superuser = (True,)
+        user.is_admin = True
+        user.is_staff = True
+        user.is_superuser = True
         user.save(using=self._db)
         return user
 
 
-class Account(AbstractBaseUser):
+class Account(AbstractBaseUser, PermissionsMixin):
     last_login = models.DateTimeField(verbose_name="last login", auto_now=True)
     username = models.CharField(max_length=60, unique=True)
     email = models.CharField(max_length=60, unique=True)
-    date_joined = models.DateTimeField(auto_now_add=True, editable=False)
+    date_joined = models.DateTimeField(default=timezone.now)
     profile_image = models.ImageField(
         upload_to="core/covers/%Y/%m/%d/", blank=True, default=""
     )
@@ -60,9 +63,55 @@ class Account(AbstractBaseUser):
         verbose_name = "account"
         verbose_name_plural = "account"
 
+    # def has_perm(self, perm, obj=None):
+    #     # Active superusers have all permissions.
+    #     if self.is_active and self.is_superuser:
+    #         return True
+
+    #     # Otherwise we need to check the backends.
+    #     return _user_has_perm(self, perm, obj)
+
+    # def has_module_perms(self, app_label):
+    #     # Active superusers have all permissions.
+    #     if self.is_active and self.is_superuser:
+    #         return True
+    #     return _user_has_module_perms(self, app_label)
+
+
+# def _user_has_module_perms(user, app_label):
+#     """
+#     A backend can raise `PermissionDenied` to short-circuit permission checking.
+#     """
+#     for backend in auth.get_backends():
+#         if not hasattr(backend, "has_module_perms"):
+#             continue
+#         try:
+#             if backend.has_module_perms(user, app_label):
+#                 return True
+#         except PermissionDenied:
+#             return False
+#     return False
+
+
+# def _user_has_perm(user, perm, obj):
+#     """
+#     A backend can raise `PermissionDenied` to short-circuit permission checking.
+#     """
+#     for backend in auth.get_backends():
+#         if not hasattr(backend, "has_perm"):
+#             continue
+#         try:
+#             if backend.has_perm(user, perm, obj):
+#                 return True
+#         except PermissionDenied:
+#             return False
+#     return False
+
 
 class Telephone(models.Model):
-    account_id = models.ForeignKey(Account, on_delete=models.CASCADE,null=True)
+    account_id = models.ForeignKey(
+        Account, on_delete=models.CASCADE, null=True
+    )
     code = models.CharField(max_length=4)
     telephone = models.CharField(max_length=12)
     type = models.IntegerField(default=1)
@@ -79,10 +128,13 @@ class Telephone(models.Model):
         verbose_name = "telephone"
         verbose_name_plural = "phones"
 
+
 class Address(models.Model):
-    account_id = models.ForeignKey(Account, on_delete=models.CASCADE,null=True)
+    account_id = models.ForeignKey(
+        Account, on_delete=models.CASCADE, blank=True
+    )
     cep = models.CharField(max_length=8)
-    complement = models.CharField(max_length=150, blank=True, default="")
+    complement = models.CharField(max_length=150, default="")
     city = models.CharField(max_length=100, default="")
     district = models.CharField(max_length=100)
     municipality_IBGE = models.IntegerField()
@@ -99,7 +151,7 @@ class Address(models.Model):
 
 
 class Producer(models.Model):
-    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     business_name = models.CharField(
         verbose_name="business name", max_length=100
     )
@@ -121,7 +173,7 @@ class Producer(models.Model):
 
 
 class Customer(models.Model):
-    account_id = models.ForeignKey(Account, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     first_name = models.CharField(verbose_name="first name", max_length=100)
     last_name = models.CharField(verbose_name="last name", max_length=100)
     cpf = models.CharField(max_length=8)

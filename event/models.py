@@ -1,69 +1,66 @@
-from customer.models import Address, Producer, Request, Telephone
+from customer.models import Producer, Request
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 
 
-class Event(models.Model):
-    producer_id = models.ForeignKey(Producer, on_delete=models.CASCADE)
-    address_id = models.OneToOneField(
-        Address,
-        on_delete=models.PROTECT,
-    )
-    telephone_id = models.OneToOneField(
-        Telephone,
-        on_delete=models.PROTECT,
-    )
-    name = models.CharField(max_length=100)
-    in_room = models.BooleanField(verbose_name="in room", default=True)
-    date_end = models.DateTimeField(verbose_name="date end")
-    date_start = models.DateTimeField(verbose_name="date start")
-    description = models.CharField(max_length=250, default="")
-    is_virtual = models.BooleanField(default=False)
-    video_url = models.CharField(verbose_name="video url", max_length=200)
+class Address(models.Model):
+    cep = models.CharField(max_length=8)
+    complement = models.CharField(max_length=150, default="")
+    city = models.CharField(max_length=100, default="")
+    district = models.CharField(max_length=100)
+    municipality_IBGE = models.IntegerField()
+    number = models.IntegerField()
+    roud = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    uf = models.CharField(max_length=2)
+    uf_ibge = models.IntegerField()
+    types = models.IntegerField()
 
     def __str__(self):
-        return self.name
+        return "%s - %s" % (self.city, self.uf)
 
     class Meta:
-        verbose_name = "event"
-        verbose_name_plural = "events"
+        verbose_name = "address"
+        verbose_name_plural = "adresses"
 
 
 class Image(models.Model):
-    event_id = models.ForeignKey(Event, on_delete=models.CASCADE)
     image_url = models.ImageField(
         max_length=200,
-        upload_to="core/covers/%Y/%m/%d/",
+        upload_to="covers/%Y/%m/%d/",
         blank=True,
         default="",
     )
     alt_text = models.CharField(max_length=150)
 
-    class Meta:
-        odering = ["event_id"]
-
     def __str__(self):
-        return self.alt_text
+        return "%s" % (self.image_url)
+        # return "%s | " % (self.image_url)
 
     class Meta:
         verbose_name = "image"
         verbose_name_plural = "images"
 
 
+class EventManager(models.Manager):
+    def get_event(self):
+        return (
+            self.filter(is_published=True).order_by("-id")
+            # .select_related("producer", "address")
+        )
+
+
 class Category(models.Model):
-    events = models.ManyToManyField(
-        Event,
-    )
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=50, unique=True)
     is_active = models.BooleanField(default=True)
-    # parent = TreeForeignKey(
-    #     "self",
-    #     on_delete=models.PROTECT,
-    #     related_name="children",
-    #     null=True,
-    #     blank=True,
-    # )
+    image_url = models.ImageField(
+        max_length=200,
+        upload_to="covers/%Y/%m/%d/",
+        blank=True,
+        default="",
+    )
+    alt_text = models.CharField(max_length=150, default="")
 
     def __str__(self):
         return self.name
@@ -74,9 +71,37 @@ class Category(models.Model):
         verbose_name_plural = "categories"
 
 
+class Event(models.Model):
+    objects = EventManager()
+    producer = models.ForeignKey(Producer, on_delete=models.CASCADE)
+    address = models.ForeignKey(
+        Address,
+        on_delete=models.PROTECT,
+    )
+    categories = models.ManyToManyField(Category, blank=True, default="")
+    image = models.OneToOneField(Image, on_delete=models.PROTECT, null=True)
+    name = models.CharField(max_length=100)
+    in_room = models.BooleanField(verbose_name="in room", default=True)
+    date_end = models.DateTimeField(verbose_name="date end")
+    date_start = models.DateTimeField(verbose_name="date start")
+    description = models.CharField(max_length=250, default="")
+    is_virtual = models.BooleanField(default=False)
+    video_url = models.CharField(verbose_name="video url", max_length=200)
+    is_published = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "event"
+        verbose_name_plural = "events"
+
+
 class Batck(models.Model):
-    event_id = models.ForeignKey(Event, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
     sequence = models.IntegerField()
+    percentage = models.IntegerField(default="")
+    sales_qtd = models.IntegerField(default=99999)
     batck_start_date = models.DateTimeField(verbose_name="batck start date")
     batck_stop_date = models.DateTimeField(verbose_name="batck start date")
     description = models.CharField(max_length=150, default="")
@@ -92,7 +117,7 @@ class Batck(models.Model):
 
 
 class TicketLeasing(models.Model):
-    batck_id = models.ForeignKey(Batck, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, default="")
     name = models.CharField(max_length=100, blank=True)
     descroption = models.CharField(max_length=150, blank=True)
     is_active = models.BooleanField(default=True)
@@ -105,12 +130,12 @@ class TicketLeasing(models.Model):
     student_price = models.DecimalField(
         verbose_name="student price", max_digits=6, decimal_places=2
     )
+    units_solid = models.IntegerField(default="")
+    units = models.IntegerField(default="")
 
     def __str__(self):
         return self.name
 
-    class Meta:
-        ordering = ["batck_id"]
 
 
 class Ticket(models.Model):
