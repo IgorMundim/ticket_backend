@@ -123,9 +123,11 @@ class BatchManager(models.Manager):
             if(batch.id < id and batch.sales_qtd >= sales_qtd and batch.batck_stop_date >= batch_stop_date):
                 is_valid = False
             elif(batch.id > id and batch.sales_qtd <= sales_qtd and batch.batck_stop_date <= batch_stop_date):
-                is_valid = False
-        
+                is_valid = False    
         return is_valid
+
+    def get_batch(self, *args: Any, **kwargs: Any):
+        return self.filter(event=kwargs.get("event_pk"))
 
 class Batck(models.Model):
     objects = BatchManager()

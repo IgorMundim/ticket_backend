@@ -94,7 +94,7 @@ class EventSerializer(serializers.ModelSerializer):
     categories = CategorySerializer(many=True)
 
 
-class BatckSerializers(serializers.ModelSerializer):
+class BatchSerializers(serializers.ModelSerializer):
     class Meta:
         model = Batck
         fields = [

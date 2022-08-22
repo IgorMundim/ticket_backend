@@ -1,6 +1,6 @@
 from customer.models import Producer
 from django.shortcuts import get_object_or_404
-from event.models import Batck, Category, Event
+from event.models import Batck, Category, Event, TicketLeasing
 from rest_framework import generics
 from rest_framework.permissions import (
     SAFE_METHODS,
@@ -11,9 +11,10 @@ from rest_framework.permissions import (
 from .serializers import (
     AddressSerializer,
     BasicEventSerializer,
-    BatckSerializers,
+    BatchSerializers,
     CategorySerializer,
     EventSerializer,
+    TicketLeasingSerializer,
 )
 
 
@@ -28,19 +29,40 @@ class IsSuperUser(BasePermission):
 
 class IsOwnerUser(BasePermission):
     def has_object_permission(self, request, view, obj):
-        print(request.method)
         if request.method in SAFE_METHODS:
             return True
 
         return bool(request.user and obj.producer.account == request.user)
 
 
-class IsOwnerBatck(BasePermission):
+class IsOwnerEvent(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True
         owner = (
             Event.objects.filter(pk=obj.event_id)
+            .select_related("producer")
+            .values("producer")
+            .first()
+        )
+        user = (
+            Producer.objects.filter(pk=request.user.id)
+            .select_related("account")
+            .values("id")
+            .first()
+        )
+
+        return bool(
+            user is not None
+            and owner is not None
+            and user["id"] == owner["producer"]
+        )
+
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        owner = (
+            Event.objects.filter(pk=view.kwargs['event_pk'])
             .select_related("producer")
             .values("producer")
             .first()
@@ -71,7 +93,7 @@ class CategoryRetrieveUpdate(generics.RetrieveUpdateAPIView, IsSuperUser):
     serializer_class = CategorySerializer
 
 
-class EventsListByCategories(generics.ListAPIView):
+class EventByCategoriesList(generics.ListAPIView):
     queryset = Event.objects.all()
     serializer_class = BasicEventSerializer
 
@@ -87,7 +109,7 @@ class EventsListByCategories(generics.ListAPIView):
         return obj
 
 
-class EventList(
+class EventListCreate(
     generics.ListCreateAPIView,
 ):
     queryset = (
@@ -100,19 +122,44 @@ class EventList(
     permission_classes = [IsAuthenticatedOrReadOnly]
 
 
-class EventRetrive(generics.RetrieveUpdateAPIView, IsOwnerUser):
+class EventRetriveUpdate(generics.RetrieveUpdateAPIView, IsOwnerUser):
     queryset = Event.objects.get_event()
 
     serializer_class = EventSerializer
     permission_classes = [IsOwnerUser]
 
 
-class ListCreateBatck(generics.ListCreateAPIView):
-    queryset = Batck.objects.all()
-    serializer_class = BatckSerializers
+class BatchListCreate(generics.ListCreateAPIView, IsOwnerEvent):
+    queryset = Batck
+    serializer_class = BatchSerializers
+    permission_classes = [IsOwnerEvent]
+
+    def get_queryset(self):
+        return self.queryset.objects.filter(event=self.kwargs.get("event_pk"))
 
 
-class RetriveUpdateBatck(generics.RetrieveUpdateAPIView, IsOwnerBatck):
+class BatchRetriveUpdateDelete(
+    generics.RetrieveUpdateDestroyAPIView, IsOwnerEvent
+):
+    queryset = Batck
+    serializer_class = BatchSerializers
+    permission_classes = [IsOwnerEvent]
+
+    def get_queryset(self):
+        return self.queryset.objects.filter(event=self.kwargs.get("event_pk"))
+
+class LeasingListCreate(generics.ListCreateAPIView):
+    queryset = TicketLeasing
+    serializer_class = TicketLeasingSerializer
+    
+    def get_queryset(self):
+        qs = super().get_queryset()
+        qs = qs.objects.get_leasing(event_pk=self.kwargs.get("event_pk"))
+        return qs
+    # def get_query(self):
+    #     return self.queryset.get_leasing(event_pk=self.kwargs.get("event_pk"))
+
+
+class RetriveUpdateLeasing(generics.RetrieveUpdateAPIView, IsOwnerEvent):
     queryset = Batck.objects.all()
-    serializer_class = BatckSerializers
-    permission_classes = [IsOwnerBatck]
+    serializer_class = TicketLeasingSerializer

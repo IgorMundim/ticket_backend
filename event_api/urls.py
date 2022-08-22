@@ -1,27 +1,32 @@
 from django.urls import path
 
 from event_api.views import (
+    BatchListCreate,
+    BatchRetriveUpdateDelete,
     CategoryListCreate,
     CategoryRetrieveUpdate,
-    EventList,
-    EventRetrive,
-    EventsListByCategories,
-    ListCreateBatck,
-    RetriveUpdateBatck,
+    EventListCreate,
+    EventRetriveUpdate,
+    EventByCategoriesList,
+    LeasingListCreate,
 )
 
 app_name = "event_api"
 
 urlpatterns = [
-    path("events/", EventList.as_view(), name="event-list"),
-    path("events/<int:pk>/", EventRetrive.as_view(), name="event-retrieve"),
+    path("events/", EventListCreate.as_view(), name="event-list"),
+    path("events/<int:pk>/", EventRetriveUpdate.as_view(), name="event-retrieve"),
     path(
-        "events/<int:pk>/batcks",
-        ListCreateBatck.as_view(),
+        "events/<int:event_pk>/batches/",
+        BatchListCreate.as_view(),
     ),
     path(
-        "events/<int:event_pk>/batcks/<int:pk>",
-        RetriveUpdateBatck.as_view(),
+        "events/<int:event_pk>/batches/<int:pk>/",
+        BatchRetriveUpdateDelete.as_view(),
+    ),
+    path(
+        "events/<int:event_pk>/leases/",
+        LeasingListCreate.as_view(),
     ),
     path(
         "categories/",
@@ -35,7 +40,7 @@ urlpatterns = [
     ),
     path(
         "categories/<int:pk>/events/",
-        EventsListByCategories.as_view(),
+        EventByCategoriesList.as_view(),
         name="category-event-list",
     ),
 ]
