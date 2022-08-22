@@ -9,6 +9,7 @@ from event_api.views import (
     EventRetriveUpdate,
     EventByCategoriesList,
     LeasingListCreate,
+    RetriveUpdateLeasing
 )
 
 app_name = "event_api"
@@ -27,6 +28,10 @@ urlpatterns = [
     path(
         "events/<int:event_pk>/leases/",
         LeasingListCreate.as_view(),
+    ),
+    path(
+        "events/<int:event_pk>/leases/<int:pk>/",
+        RetriveUpdateLeasing.as_view(),
     ),
     path(
         "categories/",

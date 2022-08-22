@@ -1,6 +1,6 @@
 from customer.models import Producer
 from django.shortcuts import get_object_or_404
-from event.models import Batck, Category, Event, TicketLeasing
+from event.models import Batch, Category, Event, Leasing
 from rest_framework import generics
 from rest_framework.permissions import (
     SAFE_METHODS,
@@ -14,7 +14,7 @@ from .serializers import (
     BatchSerializers,
     CategorySerializer,
     EventSerializer,
-    TicketLeasingSerializer,
+    LeasingSerializer,
 )
 
 
@@ -130,7 +130,7 @@ class EventRetriveUpdate(generics.RetrieveUpdateAPIView, IsOwnerUser):
 
 
 class BatchListCreate(generics.ListCreateAPIView, IsOwnerEvent):
-    queryset = Batck
+    queryset = Batch
     serializer_class = BatchSerializers
     permission_classes = [IsOwnerEvent]
 
@@ -141,25 +141,31 @@ class BatchListCreate(generics.ListCreateAPIView, IsOwnerEvent):
 class BatchRetriveUpdateDelete(
     generics.RetrieveUpdateDestroyAPIView, IsOwnerEvent
 ):
-    queryset = Batck
+    queryset = Batch
     serializer_class = BatchSerializers
     permission_classes = [IsOwnerEvent]
 
     def get_queryset(self):
         return self.queryset.objects.filter(event=self.kwargs.get("event_pk"))
 
-class LeasingListCreate(generics.ListCreateAPIView):
-    queryset = TicketLeasing
-    serializer_class = TicketLeasingSerializer
+class LeasingListCreate(generics.ListCreateAPIView, IsOwnerEvent):
+    queryset = Leasing
+    serializer_class = LeasingSerializer
+    permission_classes = [IsOwnerEvent]
     
     def get_queryset(self):
         qs = super().get_queryset()
         qs = qs.objects.get_leasing(event_pk=self.kwargs.get("event_pk"))
         return qs
-    # def get_query(self):
-    #     return self.queryset.get_leasing(event_pk=self.kwargs.get("event_pk"))
+
 
 
 class RetriveUpdateLeasing(generics.RetrieveUpdateAPIView, IsOwnerEvent):
-    queryset = Batck.objects.all()
-    serializer_class = TicketLeasingSerializer
+    queryset = Leasing
+    serializer_class = LeasingSerializer
+    permission_classes = [IsOwnerEvent]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        qs = qs.objects.get_leasing(event_pk=self.kwargs.get("event_pk"))
+        return qs

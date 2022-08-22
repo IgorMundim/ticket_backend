@@ -1,5 +1,5 @@
 from customer.models import Producer
-from event.models import Address, Batck, Category, Event, Image, TicketLeasing
+from event.models import Address, Batch, Category, Event, Image, Leasing
 from rest_framework import serializers
 
 
@@ -96,36 +96,34 @@ class EventSerializer(serializers.ModelSerializer):
 
 class BatchSerializers(serializers.ModelSerializer):
     class Meta:
-        model = Batck
+        model = Batch
         fields = [
             "id",
             "event",
-            "sequence",
             "percentage",
             "sales_qtd",
-            "batck_start_date",
-            "batck_stop_date",
+            "batch_stop_date",
             "description",
             "is_active",
         ]
 
     def validate(self, attrs):
         sales_qtd = attrs.get("sales_qtd")
-        batch_stop_date = attrs.get("batck_stop_date")
+        batch_stop_date = attrs.get("batch_stop_date")
         event_pk = self.initial_data["event"]
-        if self._context["request"]._stream.method is not "POST":
+        if self._context["request"]._stream.method == "POST":
 
-            batch = Batck.objects.filter_by_saler(
+            batch = Batch.objects.filter_by_saler(
                 event_pk=self.initial_data["event"],
                 sales_qtd=sales_qtd,
-                batck_stop_date=batch_stop_date,
+                batch_stop_date=batch_stop_date,
             )
             if batch is not None:
                 raise serializers.ValidationError("ERROR")
             return super().validate(attrs)
             
         id = self.instance.id
-        if not Batck.objects.is_valid_change(
+        if not Batch.objects.is_valid_change(
             id=id,
             sales_qtd=sales_qtd,
             batch_stop_date=batch_stop_date,
@@ -136,9 +134,9 @@ class BatchSerializers(serializers.ModelSerializer):
         return super().validate(attrs)
 
 
-class TicketLeasingSerializer(serializers.ModelSerializer):
+class LeasingSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TicketLeasing
+        model = Leasing
         fields = [
             "id",
             "event",

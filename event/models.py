@@ -4,7 +4,7 @@ from typing import Any
 
 from customer.models import Producer, Request
 from django.db import models
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from mptt.models import MPTTModel, TreeForeignKey
 
@@ -106,37 +106,43 @@ class BatchManager(models.Manager):
                 Q(event=kwargs.get("event_pk"))
                 & (
                     Q(sales_qtd__gte=kwargs.get("sales_qtd"))
-                    | Q(batck_stop_date__gte=kwargs.get("batck_stop_date"))
+                    | Q(batch_stop_date__gte=kwargs.get("batch_stop_date"))
                 )
             )
             .order_by("-id")
             .first()
         )
+
     def is_valid_change(self, *args: Any, **kwargs: Any):
         event_pk = kwargs.get("event_pk")
         id = kwargs.get("id")
         sales_qtd = kwargs.get("sales_qtd")
         batch_stop_date = kwargs.get("batch_stop_date")
-        batches =  self.filter(event=event_pk)
+        batches = self.filter(event=event_pk)
         is_valid = True
         for batch in batches:
-            if(batch.id < id and batch.sales_qtd >= sales_qtd and batch.batck_stop_date >= batch_stop_date):
+            if (
+                batch.id < id
+                and ( batch.sales_qtd >= sales_qtd
+                or batch.batch_stop_date >= batch_stop_date)
+            ):
                 is_valid = False
-            elif(batch.id > id and batch.sales_qtd <= sales_qtd and batch.batck_stop_date <= batch_stop_date):
-                is_valid = False    
+            elif (
+                batch.id > id
+                and ( batch.sales_qtd <= sales_qtd
+                or batch.batch_stop_date <= batch_stop_date )
+            ):
+                is_valid = False
         return is_valid
 
-    def get_batch(self, *args: Any, **kwargs: Any):
-        return self.filter(event=kwargs.get("event_pk"))
 
-class Batck(models.Model):
+
+class Batch(models.Model):
     objects = BatchManager()
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    sequence = models.IntegerField()
-    percentage = models.DecimalField(max_digits=3, decimal_places=2)
+    percentage = models.DecimalField(max_digits=3, decimal_places=0)
     sales_qtd = models.IntegerField()
-    batck_start_date = models.DateTimeField(verbose_name="batck start date")
-    batck_stop_date = models.DateTimeField(verbose_name="batck stop date")
+    batch_stop_date = models.DateTimeField(verbose_name="batch stop date")
     description = models.CharField(max_length=150)
     is_active = models.BooleanField(default=True)
 
@@ -149,43 +155,47 @@ class Batck(models.Model):
         verbose_name_plural = "batches"
 
 
-class TicketLeasingManage(models.Manager):
+class LeasingManage(models.Manager):
     def get_leasing(self, *args: Any, **kwargs: Any):
-        leases = self.filter(event=kwargs.get("event_pk")).annotate(
-            solid_total=Count("units_solid")
+        leases = self.filter(
+            Q(event=kwargs.get("event_pk")) & Q(is_active=True)
         )
-
-        batck = Batck.objects.filter(
-            Q(event=kwargs.get("event_pk"))
-            & Q(batck_stop_date__gt=timezone.now())
-            & Q(batck_start_date__lte=timezone.now())
-            & Q(sales_qtd__gt=leases[0].solid_total)
-        ).first()
-
+        units_solid = 0
         for leasing in leases:
-            leasing.sale_price = leasing.store_price * (
-                (batck.percentage / 100) + 1
-            )
-            leasing.student_price = (
-                leasing.store_price * ((batck.percentage / 100) + 1)
-            ) / 2
+            units_solid += leasing.units_solid
+        batch = Batch.objects.filter(
+            Q(event=kwargs.get("event_pk"))
+            & Q(batch_stop_date__gt=timezone.now())
+            # & Q(sales_qtd__gt=units_solid)
+        ).first()
+        if batch is not None:
+            for leasing in leases:
+                leasing.sale_price = leasing.store_price * (
+                    (batch.percentage / 100) + 1
+                )
+                leasing.student_price = (
+                    leasing.store_price * ((batch.percentage / 100) + 1)
+                ) / 2
         return leases
 
 
-class TicketLeasing(models.Model):
-    objects = TicketLeasingManage()
+class Leasing(models.Model):
+    objects = LeasingManage()
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, blank=True)
     descroption = models.CharField(max_length=150, blank=True)
     is_active = models.BooleanField(default=True)
     store_price = models.DecimalField(
-        verbose_name="store price", max_digits=6, decimal_places=2
+        verbose_name="store price", max_digits=8, decimal_places=2
     )
     sale_price = models.DecimalField(
-        verbose_name="sale price", max_digits=6, decimal_places=2
+        verbose_name="sale price", max_digits=8, decimal_places=2, blank=True
     )
     student_price = models.DecimalField(
-        verbose_name="student price", max_digits=6, decimal_places=2
+        verbose_name="student price",
+        max_digits=8,
+        decimal_places=2,
+        blank=True,
     )
     units_solid = models.IntegerField()
     units = models.IntegerField()
@@ -196,8 +206,9 @@ class TicketLeasing(models.Model):
 
 class Ticket(models.Model):
     request_id = models.ForeignKey(Request, on_delete=models.PROTECT)
-    ticket_leasing_id = models.ForeignKey(
-        TicketLeasing, on_delete=models.CASCADE
+    ticket_leasing_id = models.ForeignKey(Leasing, on_delete=models.CASCADE)
+    sale_price = models.DecimalField(
+        verbose_name="sale price", max_digits=8, decimal_places=2
     )
     code = models.CharField(max_length=255)
     is_student = models.BooleanField(default=False)
