@@ -79,6 +79,7 @@ class Event(models.Model):
         Address,
         on_delete=models.PROTECT,
     )
+    
     categories = models.ManyToManyField(Category, blank=True)
     image = models.OneToOneField(Image, on_delete=models.PROTECT)
     name = models.CharField(max_length=100)
