@@ -9,28 +9,28 @@ from event_api.views import (
     EventRetriveUpdate,
     EventByCategoriesList,
     LeasingListCreate,
-    RetriveUpdateLeasing
+    RetriveUpdateLeasing,
 )
 
 app_name = "event_api"
 
 urlpatterns = [
-    path("events/", EventListCreate.as_view(), name="event-list"),
-    path("events/<int:pk>/", EventRetriveUpdate.as_view(), name="event-retrieve"),
+    path("/", EventListCreate.as_view(), name="event-list"),
+    path("/<int:pk>/", EventRetriveUpdate.as_view(), name="event-retrieve"),
     path(
-        "events/<int:event_pk>/batches/",
+        "/<int:event_pk>/batches/",
         BatchListCreate.as_view(),
     ),
     path(
-        "events/<int:event_pk>/batches/<int:pk>/",
+        "/<int:event_pk>/batches/<int:pk>/",
         BatchRetriveUpdateDelete.as_view(),
     ),
     path(
-        "events/<int:event_pk>/leases/",
+        "/<int:event_pk>/leases/",
         LeasingListCreate.as_view(),
     ),
     path(
-        "events/<int:event_pk>/leases/<int:pk>/",
+        "/<int:event_pk>/leases/<int:pk>/",
         RetriveUpdateLeasing.as_view(),
     ),
     path(

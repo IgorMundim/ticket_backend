@@ -1,6 +1,6 @@
 from customer.models import Producer
 from django.shortcuts import get_object_or_404
-from event.models import Batch, Category, Event, Leasing
+from event.models import Batch, Category, Event, Leasing, Request
 from rest_framework import generics
 from rest_framework.permissions import (
     SAFE_METHODS,
@@ -15,6 +15,7 @@ from .serializers import (
     CategorySerializer,
     EventSerializer,
     LeasingSerializer,
+    RequestSerializer,
 )
 
 
@@ -169,3 +170,7 @@ class RetriveUpdateLeasing(generics.RetrieveUpdateAPIView, IsOwnerEvent):
         qs = super().get_queryset()
         qs = qs.objects.get_leasing(event_pk=self.kwargs.get("event_pk"))
         return qs
+
+class RequestListCreate(generics.ListCreateAPIView):
+    queryset = Request.objects.all()
+    serializer_class = RequestSerializer

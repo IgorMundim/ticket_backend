@@ -187,19 +187,4 @@ class Customer(models.Model):
         verbose_name_plural = "customers"
 
 
-class Request(models.Model):
-    customer_id = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    date_joined = models.DateTimeField(
-        verbose_name="date joined", auto_now_add=True, editable=False
-    )
-    is_paid = models.BooleanField()
-    type_of_payment = models.DecimalField(
-        verbose_name="type of payment", max_digits=2, decimal_places=0
-    )
 
-    def __str__(self):
-        return self.date_joined
-
-    class Meta:
-        verbose_name = "request"
-        verbose_name_plural = "requests"

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "event",
     "event_api",
     "customer",
+    "customer_api",
 ]
 
 MIDDLEWARE = [

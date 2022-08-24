@@ -2,7 +2,7 @@ from datetime import date
 from os import truncate
 from typing import Any
 
-from customer.models import Producer, Request
+from customer.models import Account, Producer
 from django.db import models
 from django.db.models import Count, Q, Sum
 from django.utils import timezone
@@ -204,10 +204,26 @@ class Leasing(models.Model):
     def __str__(self):
         return self.name
 
+class Request(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    date_joined = models.DateTimeField(
+        verbose_name="date joined", auto_now_add=True, editable=False
+    )
+    is_paid = models.BooleanField()
+    type_of_payment = models.DecimalField(
+        verbose_name="type of payment", max_digits=2, decimal_places=0
+    )
+
+    def __str__(self):
+        return self.date_joined
+
+    class Meta:
+        verbose_name = "request"
+        verbose_name_plural = "requests"
 
 class Ticket(models.Model):
-    request_id = models.ForeignKey(Request, on_delete=models.PROTECT)
-    ticket_leasing_id = models.ForeignKey(Leasing, on_delete=models.CASCADE)
+    request = models.ForeignKey(Request, on_delete=models.PROTECT)
+    leasing = models.ForeignKey(Leasing, on_delete=models.CASCADE)
     sale_price = models.DecimalField(
         verbose_name="sale price", max_digits=8, decimal_places=2
     )
@@ -222,3 +238,4 @@ class Ticket(models.Model):
         ordering = ["request_id"]
         verbose_name = "ticket"
         verbose_name_plural = "tickets"
+

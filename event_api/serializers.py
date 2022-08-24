@@ -1,5 +1,5 @@
 from customer.models import Producer
-from event.models import Address, Batch, Category, Event, Image, Leasing
+from event.models import Address, Batch, Category, Event, Image, Leasing, Request
 from rest_framework import serializers
 
 
@@ -149,3 +149,8 @@ class LeasingSerializer(serializers.ModelSerializer):
             "units",
             "is_active",
         ]
+
+class RequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        models = Request
+        fields = "__all__"
