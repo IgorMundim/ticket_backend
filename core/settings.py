@@ -30,7 +30,7 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
 ]
 
-AUTH_USER_MODEL = "customer.Account"
+AUTH_USER_MODEL = "account.Account"
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,8 +44,8 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "event",
     "event_api",
-    "customer",
-    "customer_api",
+    "account",
+    "account_api",
 ]
 
 MIDDLEWARE = [

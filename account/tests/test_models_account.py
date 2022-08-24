@@ -1,4 +1,4 @@
-from customer.models import Account, Customer, Producer, Request
+from account.models import Account, Customer, Producer, Request
 
 
 def test_create_single_account(super_account):

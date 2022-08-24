@@ -1,6 +1,6 @@
-from customer.models import Producer
+from account.models import Producer, Requisition
 from django.shortcuts import get_object_or_404
-from event.models import Batch, Category, Event, Leasing, Request
+from event.models import Batch, Category, Event, Leasing, Ticket
 from rest_framework import generics
 from rest_framework.permissions import (
     SAFE_METHODS,
@@ -15,7 +15,7 @@ from .serializers import (
     CategorySerializer,
     EventSerializer,
     LeasingSerializer,
-    RequestSerializer,
+    TicketSerializer,
 )
 
 
@@ -52,7 +52,8 @@ class IsOwnerEvent(BasePermission):
             .values("id")
             .first()
         )
-
+        print(user["id"])
+        print(request.user.id)
         return bool(
             user is not None
             and owner is not None
@@ -63,7 +64,7 @@ class IsOwnerEvent(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         owner = (
-            Event.objects.filter(pk=view.kwargs['event_pk'])
+            Event.objects.filter(pk=view.kwargs["event_pk"])
             .select_related("producer")
             .values("producer")
             .first()
@@ -74,11 +75,30 @@ class IsOwnerEvent(BasePermission):
             .values("id")
             .first()
         )
-
         return bool(
             user is not None
             and owner is not None
             and user["id"] == owner["producer"]
+        )
+
+
+class IsOwnerTicket(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return False
+
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        owner = (
+            Requisition.objects.filter(id=request.data["requisition"])
+            .values("account")
+            .first()
+        )
+
+        return bool(
+            owner["account"]
+            and request.user.id
+            and owner["account"] == request.user.id
         )
 
 
@@ -115,7 +135,7 @@ class EventListCreate(
 ):
     queryset = (
         Event.objects.get_event()
-        .select_related("producer", "image", "address")
+        .select_related("image", "address")
         .prefetch_related("categories")
     )
 
@@ -124,8 +144,11 @@ class EventListCreate(
 
 
 class EventRetriveUpdate(generics.RetrieveUpdateAPIView, IsOwnerUser):
-    queryset = Event.objects.get_event()
-
+    queryset = (
+        Event.objects.get_event()
+        .select_related("image", "address")
+        .prefetch_related("categories")
+    )
     serializer_class = EventSerializer
     permission_classes = [IsOwnerUser]
 
@@ -149,19 +172,19 @@ class BatchRetriveUpdateDelete(
     def get_queryset(self):
         return self.queryset.objects.filter(event=self.kwargs.get("event_pk"))
 
+
 class LeasingListCreate(generics.ListCreateAPIView, IsOwnerEvent):
     queryset = Leasing
     serializer_class = LeasingSerializer
     permission_classes = [IsOwnerEvent]
-    
+
     def get_queryset(self):
         qs = super().get_queryset()
         qs = qs.objects.get_leasing(event_pk=self.kwargs.get("event_pk"))
         return qs
 
 
-
-class RetriveUpdateLeasing(generics.RetrieveUpdateAPIView, IsOwnerEvent):
+class LeasingRetriveUpdate(generics.RetrieveUpdateAPIView, IsOwnerEvent):
     queryset = Leasing
     serializer_class = LeasingSerializer
     permission_classes = [IsOwnerEvent]
@@ -171,6 +194,8 @@ class RetriveUpdateLeasing(generics.RetrieveUpdateAPIView, IsOwnerEvent):
         qs = qs.objects.get_leasing(event_pk=self.kwargs.get("event_pk"))
         return qs
 
-class RequestListCreate(generics.ListCreateAPIView):
-    queryset = Request.objects.all()
-    serializer_class = RequestSerializer
+
+class TicketListCreate(generics.ListCreateAPIView, IsOwnerTicket):
+    queryset = Ticket.objects.all().select_related("leasing", "requisition")
+    serializer_class = TicketSerializer
+    permission_classes = [IsOwnerTicket]

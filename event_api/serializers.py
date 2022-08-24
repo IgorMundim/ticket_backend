@@ -1,5 +1,8 @@
-from customer.models import Producer
-from event.models import Address, Batch, Category, Event, Image, Leasing, Request
+from dataclasses import fields
+from urllib import request
+
+from account.models import Producer
+from event.models import Address, Batch, Category, Event, Image, Leasing, Ticket
 from rest_framework import serializers
 
 
@@ -89,7 +92,7 @@ class EventSerializer(serializers.ModelSerializer):
         ]
 
     address = AddressSerializer(many=False)
-    producer = ProducerSerializer(many=False)
+    # producer = ProducerSerializer(many=False)
     image = ImageSerializer(many=False)
     categories = CategorySerializer(many=True)
 
@@ -121,7 +124,7 @@ class BatchSerializers(serializers.ModelSerializer):
             if batch is not None:
                 raise serializers.ValidationError("ERROR")
             return super().validate(attrs)
-            
+
         id = self.instance.id
         if not Batch.objects.is_valid_change(
             id=id,
@@ -150,7 +153,17 @@ class LeasingSerializer(serializers.ModelSerializer):
             "is_active",
         ]
 
-class RequestSerializer(serializers.ModelSerializer):
+
+class TicketSerializer(serializers.ModelSerializer):
     class Meta:
-        models = Request
-        fields = "__all__"
+        model = Ticket
+        fields = [
+            "id",
+            "sale_price",
+            "code",
+            "is_student",
+            "is_active",
+            "requisition",
+            "leasing",
+        ]
+

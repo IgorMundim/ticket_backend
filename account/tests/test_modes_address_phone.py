@@ -1,4 +1,4 @@
-from customer.models import Address, Telephone
+from account.models import Address, Telephone
 
 
 def test_create_address_with_account(create_address_account):

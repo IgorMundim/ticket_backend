@@ -8,7 +8,7 @@ from event.models import (
     Ticket,
     TicketLeasing,
 )
-from customer.models import Address, Telephone
+from account.models import Address, Telephone
 from django.utils import timezone
 
 
