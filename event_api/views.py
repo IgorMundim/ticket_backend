@@ -1,4 +1,4 @@
-from account.models import Producer, Requisition
+from account.models import Requisition
 from django.shortcuts import get_object_or_404
 from event.models import Batch, Category, Event, Leasing, Ticket
 from rest_framework import generics
@@ -28,58 +28,36 @@ class IsSuperUser(BasePermission):
         return bool(request.user and request.user.is_superuser)
 
 
-class IsOwnerUser(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        if request.method in SAFE_METHODS:
-            return True
-
-        return bool(request.user and obj.producer.account == request.user)
-
-
 class IsOwnerEvent(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True
-        owner = (
-            Event.objects.filter(pk=obj.event_id)
-            .select_related("producer")
-            .values("producer")
-            .first()
-        )
-        user = (
-            Producer.objects.filter(pk=request.user.id)
-            .select_related("account")
-            .values("id")
-            .first()
-        )
-        print(user["id"])
-        print(request.user.id)
-        return bool(
-            user is not None
-            and owner is not None
-            and user["id"] == owner["producer"]
-        )
+        return bool(request.user and obj.account == request.user)
 
+
+class IsOwnerObject(BasePermission):
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
             return True
         owner = (
             Event.objects.filter(pk=view.kwargs["event_pk"])
-            .select_related("producer")
-            .values("producer")
-            .first()
-        )
-        user = (
-            Producer.objects.filter(pk=request.user.id)
             .select_related("account")
-            .values("id")
+            .values("account")
             .first()
         )
-        return bool(
-            user is not None
-            and owner is not None
-            and user["id"] == owner["producer"]
-        )
+        return bool(owner is not None and owner["account"] == request.user.id)
+
+    # def has_object_permission(self, request, view, obj):
+    #     if request.method in SAFE_METHODS:
+    #         return True
+    #     owner = (
+    #         Event.objects.filter(pk=obj.event_id)
+    #         .select_related("account")
+    #         .values("account")
+    #         .first()
+    #     )
+
+    #     return bool(owner["account"] == request.user.id)
 
 
 class IsOwnerTicket(BasePermission):
@@ -135,7 +113,7 @@ class EventListCreate(
 ):
     queryset = (
         Event.objects.get_event()
-        .select_related("image", "address")
+        .select_related("image", "address", "account")
         .prefetch_related("categories")
     )
 
@@ -143,40 +121,40 @@ class EventListCreate(
     permission_classes = [IsAuthenticatedOrReadOnly]
 
 
-class EventRetriveUpdate(generics.RetrieveUpdateAPIView, IsOwnerUser):
+class EventRetriveUpdate(generics.RetrieveUpdateAPIView, IsOwnerEvent):
     queryset = (
         Event.objects.get_event()
-        .select_related("image", "address")
+        .select_related("image", "address", "account")
         .prefetch_related("categories")
     )
     serializer_class = EventSerializer
-    permission_classes = [IsOwnerUser]
+    permission_classes = [IsOwnerEvent]
 
 
-class BatchListCreate(generics.ListCreateAPIView, IsOwnerEvent):
+class BatchListCreate(generics.ListCreateAPIView, IsOwnerObject):
     queryset = Batch
     serializer_class = BatchSerializers
-    permission_classes = [IsOwnerEvent]
+    permission_classes = [IsOwnerObject]
 
     def get_queryset(self):
         return self.queryset.objects.filter(event=self.kwargs.get("event_pk"))
 
 
 class BatchRetriveUpdateDelete(
-    generics.RetrieveUpdateDestroyAPIView, IsOwnerEvent
+    generics.RetrieveUpdateDestroyAPIView, IsOwnerObject
 ):
     queryset = Batch
     serializer_class = BatchSerializers
-    permission_classes = [IsOwnerEvent]
+    permission_classes = [IsOwnerObject]
 
     def get_queryset(self):
         return self.queryset.objects.filter(event=self.kwargs.get("event_pk"))
 
 
-class LeasingListCreate(generics.ListCreateAPIView, IsOwnerEvent):
+class LeasingListCreate(generics.ListCreateAPIView, IsOwnerObject):
     queryset = Leasing
     serializer_class = LeasingSerializer
-    permission_classes = [IsOwnerEvent]
+    permission_classes = [IsOwnerObject]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -184,10 +162,10 @@ class LeasingListCreate(generics.ListCreateAPIView, IsOwnerEvent):
         return qs
 
 
-class LeasingRetriveUpdate(generics.RetrieveUpdateAPIView, IsOwnerEvent):
+class LeasingRetriveUpdate(generics.RetrieveUpdateAPIView, IsOwnerObject):
     queryset = Leasing
     serializer_class = LeasingSerializer
-    permission_classes = [IsOwnerEvent]
+    permission_classes = [IsOwnerObject]
 
     def get_queryset(self):
         qs = super().get_queryset()

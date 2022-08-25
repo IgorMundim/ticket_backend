@@ -2,7 +2,7 @@ from datetime import date
 from os import truncate
 from typing import Any
 
-from account.models import Account, Producer, Requisition
+from account.models import Account, Requisition
 from django.db import models
 from django.db.models import Count, Q, Sum
 from django.utils import timezone
@@ -74,12 +74,12 @@ class Category(models.Model):
 
 class Event(models.Model):
     objects = EventManager()
-    producer = models.ForeignKey(Producer, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     address = models.ForeignKey(
         Address,
         on_delete=models.PROTECT,
     )
-    
+
     categories = models.ManyToManyField(Category, blank=True)
     image = models.OneToOneField(Image, on_delete=models.PROTECT)
     name = models.CharField(max_length=100)
@@ -122,33 +122,30 @@ class BatchManager(models.Manager):
         batches = self.filter(event=event_pk)
         is_valid = True
         for batch in batches:
-            if (
-                batch.id < id
-                and ( batch.sales_qtd >= sales_qtd
-                or batch.batch_stop_date >= batch_stop_date)
+            if batch.id < id and (
+                batch.sales_qtd >= sales_qtd
+                or batch.batch_stop_date >= batch_stop_date
             ):
                 is_valid = False
-            elif (
-                batch.id > id
-                and ( batch.sales_qtd <= sales_qtd
-                or batch.batch_stop_date <= batch_stop_date )
+            elif batch.id > id and (
+                batch.sales_qtd <= sales_qtd
+                or batch.batch_stop_date <= batch_stop_date
             ):
                 is_valid = False
         return is_valid
 
 
-
 class Batch(models.Model):
     objects = BatchManager()
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    percentage = models.DecimalField(max_digits=3, decimal_places=0)
+    percentage = models.DecimalField(max_digits=5, decimal_places=2)
     sales_qtd = models.IntegerField()
     batch_stop_date = models.DateTimeField(verbose_name="batch stop date")
     description = models.CharField(max_length=150)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.sequence
+        return self.description
 
     class Meta:
         ordering = ["event_id"]
@@ -190,19 +187,25 @@ class Leasing(models.Model):
         verbose_name="store price", max_digits=8, decimal_places=2
     )
     sale_price = models.DecimalField(
-        verbose_name="sale price", max_digits=8, decimal_places=2, blank=True
+        verbose_name="sale price",
+        max_digits=8,
+        decimal_places=2,
+        blank=True,
+        default="0.00",
     )
     student_price = models.DecimalField(
         verbose_name="student price",
         max_digits=8,
         decimal_places=2,
         blank=True,
+        default="0.00",
     )
     units_solid = models.IntegerField()
     units = models.IntegerField()
 
     def __str__(self):
         return self.name
+
 
 class Ticket(models.Model):
     requisition = models.ForeignKey(Requisition, on_delete=models.PROTECT)
@@ -220,4 +223,3 @@ class Ticket(models.Model):
     class Meta:
         verbose_name = "ticket"
         verbose_name_plural = "tickets"
-

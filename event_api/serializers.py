@@ -1,7 +1,6 @@
 from dataclasses import fields
 from urllib import request
 
-from account.models import Producer
 from event.models import Address, Batch, Category, Event, Image, Leasing, Ticket
 from rest_framework import serializers
 
@@ -33,10 +32,6 @@ class AddressSerializer(serializers.ModelSerializer):
         ]
 
 
-class ProducerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Producer
-        fields = "__all__"
 
 
 class ImageSerializer(serializers.ModelSerializer):
@@ -86,7 +81,7 @@ class EventSerializer(serializers.ModelSerializer):
             "video_url",
             "is_published",
             "address",
-            "producer",
+            "account",
             "image",
             "categories",
         ]
