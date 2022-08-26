@@ -1,11 +1,9 @@
 # Create your models here.
-from django.contrib import auth
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin,
 )
-from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.utils import timezone
 
@@ -23,6 +21,20 @@ class AccountManage(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
         return user
+
+    # def create_customer(self, email, username, profile_image, password=None):
+    #     if not email:
+    #         raise ValueError("User must have an email address")
+    #     if not username:
+    #         raise ValueError("User must have a username")
+    #     user = self.model(
+    #         email=self.normalize_email(email),
+    #         username=username,
+    #         profile_image=profile_image
+    #     )
+    #     user.set_password(password)
+    #     user.save(using=self._db)
+    #     return user
 
     def create_superuser(self, email, username, password):
         user = self.create_user(
@@ -64,86 +76,20 @@ class Account(AbstractBaseUser, PermissionsMixin):
         verbose_name = "account"
         verbose_name_plural = "account"
 
-    # def has_perm(self, perm, obj=None):
-    #     # Active superusers have all permissions.
-    #     if self.is_active and self.is_superuser:
-    #         return True
-
-    #     # Otherwise we need to check the backends.
-    #     return _user_has_perm(self, perm, obj)
-
-    # def has_module_perms(self, app_label):
-    #     # Active superusers have all permissions.
-    #     if self.is_active and self.is_superuser:
-    #         return True
-    #     return _user_has_module_perms(self, app_label)
-
-
-# def _user_has_module_perms(user, app_label):
-#     """
-#     A backend can raise `PermissionDenied` to short-circuit permission checking.
-#     """
-#     for backend in auth.get_backends():
-#         if not hasattr(backend, "has_module_perms"):
-#             continue
-#         try:
-#             if backend.has_module_perms(user, app_label):
-#                 return True
-#         except PermissionDenied:
-#             return False
-#     return False
-
-
-# def _user_has_perm(user, perm, obj):
-#     """
-#     A backend can raise `PermissionDenied` to short-circuit permission checking.
-#     """
-#     for backend in auth.get_backends():
-#         if not hasattr(backend, "has_perm"):
-#             continue
-#         try:
-#             if backend.has_perm(user, perm, obj):
-#                 return True
-#         except PermissionDenied:
-#             return False
-#     return False
-
-
-class Telephone(models.Model):
-    account_id = models.ForeignKey(
-        Account, on_delete=models.CASCADE, null=True
-    )
-    code = models.CharField(max_length=4)
-    telephone = models.CharField(max_length=12)
-    type = models.IntegerField(default=1)
-    description = models.CharField(
-        max_length=150,
-        blank=True,
-        default="",
-    )
-
-    def __str__(self):
-        return "%s-%s" % (self.code, self.telephone)
-
-    class Meta:
-        verbose_name = "telephone"
-        verbose_name_plural = "phones"
-
 
 class Address(models.Model):
-    account_id = models.ForeignKey(
+    account = models.ForeignKey(
         Account, on_delete=models.CASCADE, blank=True
     )
+    telephone = models.CharField(max_length=20,  default="")
     cep = models.CharField(max_length=8)
     complement = models.CharField(max_length=150, default="")
     city = models.CharField(max_length=100, default="")
     district = models.CharField(max_length=100)
-    municipality_IBGE = models.IntegerField()
     number = models.IntegerField()
     roud = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
     uf = models.CharField(max_length=2)
-    uf_ibge = models.IntegerField()
     types = models.IntegerField()
 
     class Meta:
