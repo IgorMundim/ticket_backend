@@ -41,6 +41,16 @@ class ImageSerializer(serializers.ModelSerializer):
 
 
 class BasicEventSerializer(serializers.ModelSerializer):
+    
+    address = serializers.StringRelatedField()
+    image = serializers.StringRelatedField()
+    event_url = serializers.HyperlinkedRelatedField(
+        many=False,
+        view_name="event_api:event-retrieve",
+        read_only=True,
+        source="id",
+    )
+
     class Meta:
         model = Event
         fields = [
@@ -50,14 +60,7 @@ class BasicEventSerializer(serializers.ModelSerializer):
             "event_url",
         ]
 
-    address = serializers.StringRelatedField()
-    image = serializers.StringRelatedField()
-    event_url = serializers.HyperlinkedRelatedField(
-        many=False,
-        view_name="event_api:event-retrieve",
-        read_only=True,
-        source="id",
-    )
+
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -68,6 +71,11 @@ class EventSerializer(serializers.ModelSerializer):
     # image = serializers.StringRelatedField()
     # producer = serializers.StringRelatedField()
 
+    address = AddressSerializer(many=False)
+    # producer = ProducerSerializer(many=False)
+    image = ImageSerializer(many=False)
+    categories = CategorySerializer(many=True)
+    
     class Meta:
         model = Event
         fields = [
@@ -86,10 +94,7 @@ class EventSerializer(serializers.ModelSerializer):
             "categories",
         ]
 
-    address = AddressSerializer(many=False)
-    # producer = ProducerSerializer(many=False)
-    image = ImageSerializer(many=False)
-    categories = CategorySerializer(many=True)
+
 
 
 class BatchSerializers(serializers.ModelSerializer):

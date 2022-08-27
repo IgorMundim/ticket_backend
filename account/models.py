@@ -22,19 +22,19 @@ class AccountManage(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    # def create_customer(self, email, username, profile_image, password=None):
-    #     if not email:
-    #         raise ValueError("User must have an email address")
-    #     if not username:
-    #         raise ValueError("User must have a username")
-    #     user = self.model(
-    #         email=self.normalize_email(email),
-    #         username=username,
-    #         profile_image=profile_image
-    #     )
-    #     user.set_password(password)
-    #     user.save(using=self._db)
-    #     return user
+    def create(self, email, username, profile_image, password=None):
+        if not email:
+            raise ValueError("User must have an email address")
+        if not username:
+            raise ValueError("User must have a username")
+        user = self.model(
+            email=self.normalize_email(email),
+            username=username,
+            profile_image=profile_image,
+        )
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
 
     def create_superuser(self, email, username, password):
         user = self.create_user(
@@ -78,10 +78,8 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
 
 class Address(models.Model):
-    account = models.ForeignKey(
-        Account, on_delete=models.CASCADE, blank=True
-    )
-    telephone = models.CharField(max_length=20,  default="")
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, blank=True)
+    telephone = models.CharField(max_length=20, default="")
     cep = models.CharField(max_length=8)
     complement = models.CharField(max_length=150, default="")
     city = models.CharField(max_length=100, default="")
@@ -94,7 +92,7 @@ class Address(models.Model):
 
     class Meta:
         verbose_name = "address"
-        verbose_name_plural = "adresses"
+        verbose_name_plural = "addresses"
 
 
 class Producer(models.Model):
