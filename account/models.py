@@ -1,9 +1,6 @@
 # Create your models here.
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-    BaseUserManager,
-    PermissionsMixin,
-)
+from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
+                                        PermissionsMixin)
 from django.db import models
 from django.utils import timezone
 
@@ -55,7 +52,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     email = models.CharField(max_length=60, unique=True)
     date_joined = models.DateTimeField(default=timezone.now)
     profile_image = models.ImageField(
-        upload_to="core/covers/%Y/%m/%d/", blank=True, default=""
+        upload_to="account/covers/%Y/%m/%d/", blank=True, default=""
     )
     hide_email = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)

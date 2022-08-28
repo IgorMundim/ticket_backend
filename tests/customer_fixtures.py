@@ -1,5 +1,7 @@
 import pytest
-from account.models import Account, Address, Customer, Producer, Request, Telephone
+
+from account.models import (Account, Address, Customer, Producer, Request,
+                            Telephone)
 
 
 @pytest.fixture

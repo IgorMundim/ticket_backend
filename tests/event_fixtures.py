@@ -1,15 +1,9 @@
 import pytest
-from event.models import (
-    Batck,
-    Category,
-    Event,
-    Image,
-    Stock,
-    Ticket,
-    TicketLeasing,
-)
-from account.models import Address, Telephone
 from django.utils import timezone
+
+from account.models import Address, Telephone
+from event.models import (Batck, Category, Event, Image, Stock, Ticket,
+                          TicketLeasing)
 
 
 @pytest.fixture

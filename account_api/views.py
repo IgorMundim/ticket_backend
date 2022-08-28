@@ -1,15 +1,11 @@
-from account.models import Account, Address, Customer, Producer, Requisition
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.permissions import SAFE_METHODS, AllowAny, BasePermission
 
-from account_api.serializers import (
-    AccountSerializer,
-    AddressSerializer,
-    CustomerSerializer,
-    ProducerSerializer,
-    RequisitionSerializer,
-)
+from account.models import Account, Address, Customer, Producer, Requisition
+from account_api.serializers import (AccountSerializer, AddressSerializer,
+                                     CustomerSerializer, ProducerSerializer,
+                                     RequisitionSerializer)
 
 
 class IsOwnerObject(BasePermission):

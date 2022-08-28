@@ -1,6 +1,8 @@
-from account.models import Account, Address, Customer, Producer, Requisition
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+
+from account.models import Account, Address, Customer, Producer, Requisition
+from utils.validation import strong_password
 
 
 class RequisitionSerializer(serializers.ModelSerializer):
@@ -42,14 +44,18 @@ class AccountSerializer(serializers.ModelSerializer):
         extra_kwargs = {"password": {"write_only": True, "min_length": 8}}
 
     def validate(self, attrs):
+        strong_password(attrs["password"])
         if attrs["password"] != attrs["password2"]:
-            raise serializers.ValidationError({"password": "Password fields didn't match."})
+            raise serializers.ValidationError(
+                {"password": "Password fields didn't match."}
+            )
+        return attrs
 
     def create(self, validated_data):
         account = Account.objects.create(
             validated_data["email"],
             validated_data["username"],
-            validated_data["profile_image"],
+            validated_data.get("profile_image",""),
             validated_data["password"],
         )
         return account
@@ -57,7 +63,9 @@ class AccountSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.username = validated_data.get("username", instance.username)
         instance.email = validated_data.get("email", instance.email)
-        instance.is_active = validated_data.get("is_active", instance.is_active)
+        instance.is_active = validated_data.get(
+            "is_active", instance.is_active
+        )
         instance.profile_image = validated_data.get(
             "profile_image", instance.profile_image
         )

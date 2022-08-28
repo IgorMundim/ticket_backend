@@ -1,17 +1,10 @@
-from django.urls import include, path
+from django.urls import path
 
-from account_api.views import (
-    AccountCreate,
-    AccountRetriveUpdate,
-    AddressListCreate,
-    AddressRetrieveUpdateDestroy,
-    CustomerCreate,
-    CustomerRetriveUpdate,
-    ProducerCreate,
-    ProducerRetriveUpdate,
-    RequisitionListCreate,
-    RequisitionRetriveUpdate,
-)
+from account_api.views import (AccountCreate, AccountRetriveUpdate,
+                               AddressListCreate, AddressRetrieveUpdateDestroy,
+                               CustomerCreate, CustomerRetriveUpdate,
+                               ProducerCreate, ProducerRetriveUpdate,
+                               RequisitionListCreate, RequisitionRetriveUpdate)
 
 app_name = "account_api"
 

@@ -1,11 +1,20 @@
 from dataclasses import fields
 from urllib import request
 
-from event.models import Address, Batch, Category, Event, Image, Leasing, Ticket
 from rest_framework import serializers
+
+from event.models import (Address, Batch, Category, Event, Image, Leasing,
+                          Ticket)
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name="event_api:category-retrieve"
+    )
+    url_events = serializers.HyperlinkedIdentityField(
+        view_name="event_api:events-by-category"
+    )
+
     class Meta:
         model = Category
         fields = [
@@ -14,6 +23,8 @@ class CategorySerializer(serializers.ModelSerializer):
             "slug",
             "image_url",
             "alt_text",
+            "url",
+            "url_events",
         ]  # "image_url","alt_text"
 
 
@@ -21,6 +32,7 @@ class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
         fields = [
+            "id",
             "cep",
             "complement",
             "city",
@@ -32,35 +44,34 @@ class AddressSerializer(serializers.ModelSerializer):
         ]
 
 
-
-
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
-        fields = ["image_url", "alt_text"]
+        fields = ["id", "image_url", "alt_text"]
 
 
 class BasicEventSerializer(serializers.ModelSerializer):
-    
+    url = serializers.HyperlinkedIdentityField(
+        view_name="event_api:event-retrieve"
+    )
     address = serializers.StringRelatedField()
     image = serializers.StringRelatedField()
-    event_url = serializers.HyperlinkedRelatedField(
-        many=False,
-        view_name="event_api:event-retrieve",
-        read_only=True,
-        source="id",
-    )
+    # event_url = serializers.HyperlinkedRelatedField(
+    #     many=False,
+    #     view_name="event_api:event-retrieve",
+    #     read_only=True,
+    #     source="id",
+    # )
 
     class Meta:
         model = Event
         fields = [
+            "id",
             "name",
             "address",
             "image",
-            "event_url",
+            "url",
         ]
-
-
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -70,12 +81,14 @@ class EventSerializer(serializers.ModelSerializer):
     # )
     # image = serializers.StringRelatedField()
     # producer = serializers.StringRelatedField()
-
+    url = serializers.HyperlinkedIdentityField(
+        view_name="event_api:event-retrieve"
+    )
     address = AddressSerializer(many=False)
     # producer = ProducerSerializer(many=False)
     image = ImageSerializer(many=False)
     categories = CategorySerializer(many=True)
-    
+
     class Meta:
         model = Event
         fields = [
@@ -92,12 +105,15 @@ class EventSerializer(serializers.ModelSerializer):
             "account",
             "image",
             "categories",
+            "url",
         ]
 
 
-
-
 class BatchSerializers(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name="event_api:batch-retrieve"
+    )
+
     class Meta:
         model = Batch
         fields = [
@@ -108,6 +124,7 @@ class BatchSerializers(serializers.ModelSerializer):
             "batch_stop_date",
             "description",
             "is_active",
+            "url",
         ]
 
     def validate(self, attrs):
@@ -138,6 +155,9 @@ class BatchSerializers(serializers.ModelSerializer):
 
 
 class LeasingSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name="event_api:leasing-retrieve"
+    )
     class Meta:
         model = Leasing
         fields = [
@@ -151,6 +171,7 @@ class LeasingSerializer(serializers.ModelSerializer):
             "units_solid",
             "units",
             "is_active",
+            "url",
         ]
 
 
@@ -166,4 +187,3 @@ class TicketSerializer(serializers.ModelSerializer):
             "requisition",
             "leasing",
         ]
-

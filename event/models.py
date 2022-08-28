@@ -2,11 +2,12 @@ from datetime import date
 from os import truncate
 from typing import Any
 
-from account.models import Account, Requisition
 from django.db import models
 from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from mptt.models import MPTTModel, TreeForeignKey
+
+from account.models import Account, Requisition
 
 
 class Address(models.Model):

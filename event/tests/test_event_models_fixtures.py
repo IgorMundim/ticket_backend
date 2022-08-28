@@ -1,14 +1,7 @@
 from cmath import sin
 
-from event.models import (
-    Batck,
-    Category,
-    Event,
-    Image,
-    Stock,
-    Ticket,
-    TicketLeasing,
-)
+from event.models import (Batck, Category, Event, Image, Stock, Ticket,
+                          TicketLeasing)
 
 
 def test_create_event_with_producer_address_telephone(single_event):
