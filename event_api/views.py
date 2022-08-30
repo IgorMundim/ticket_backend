@@ -130,7 +130,7 @@ class BatchListCreate(generics.ListCreateAPIView, IsOwner):
 class BatchRetrieveUpdateDestroy(
     generics.RetrieveUpdateDestroyAPIView, IsOwnerObject
 ):
-    queryset = Batch.objects.all()
+    queryset = Batch
     serializer_class = BatchSerializers
     permission_classes = [IsOwnerObject]
 

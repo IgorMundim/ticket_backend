@@ -1,10 +1,16 @@
 from dataclasses import fields
 from urllib import request
 
+from event.models import (
+    Address,
+    Batch,
+    Category,
+    Event,
+    Image,
+    Leasing,
+    Ticket,
+)
 from rest_framework import serializers
-
-from event.models import (Address, Batch, Category, Event, Image, Leasing,
-                          Ticket)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -130,7 +136,7 @@ class BatchSerializers(serializers.ModelSerializer):
     def validate(self, attrs):
         sales_qtd = attrs.get("sales_qtd")
         batch_stop_date = attrs.get("batch_stop_date")
-        event_pk = self.initial_data["event"]
+
         if self._context["request"]._stream.method == "POST":
 
             batch = Batch.objects.filter_by_saler(
@@ -141,6 +147,8 @@ class BatchSerializers(serializers.ModelSerializer):
             if batch is not None:
                 raise serializers.ValidationError("ERROR")
             return super().validate(attrs)
+
+        event_pk = self.initial_data["event"]
 
         id = self.instance.id
         if not Batch.objects.is_valid_change(
@@ -158,6 +166,7 @@ class LeasingSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="event_api:leasing-retrieve"
     )
+
     class Meta:
         model = Leasing
         fields = [

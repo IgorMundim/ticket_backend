@@ -1,10 +1,17 @@
 from django.urls import path
 
-from event_api.views import (BatchListCreate, BatchRetrieveUpdateDestroy,
-                             CategoryListCreate, CategoryRetrieveUpdate,
-                             EventByCategoriesList, EventListCreate,
-                             EventRetrieveUpdate, LeasingListCreate,
-                             LeasingRetrieveUpdate, TicketListCreate)
+from event_api.views import (
+    BatchListCreate,
+    BatchRetrieveUpdateDestroy,
+    CategoryListCreate,
+    CategoryRetrieveUpdate,
+    EventByCategoriesList,
+    EventListCreate,
+    EventRetrieveUpdate,
+    LeasingListCreate,
+    LeasingRetrieveUpdate,
+    TicketListCreate,
+)
 
 app_name = "event_api"
 
