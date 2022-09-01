@@ -1,9 +1,8 @@
 import pytest
 from django.utils import timezone
 
-from account.models import Address, Telephone
-from event.models import (Batck, Category, Event, Image, Stock, Ticket,
-                          TicketLeasing)
+from account.models import Address
+from event.models import (Batch, Category, Event, Image)
 
 
 @pytest.fixture
@@ -23,15 +22,6 @@ def create_address_account(db, single_account):
         types="1",
     )
 
-
-@pytest.fixture
-def single_telephone(db):
-    return Telephone.objects.create(
-        code="999",
-        telephone="default",
-        type="1",
-        description="default",
-    )
 
 
 @pytest.fixture
@@ -78,7 +68,7 @@ def single_image_with_event(db, single_event):
 
 @pytest.fixture
 def single_batck_with_event(db, single_event):
-    return Batck.objects.create(
+    return Batch.objects.create(
         event_id=single_event,
         sequence=1,
         batck_start_date=timezone.now(),
@@ -87,41 +77,6 @@ def single_batck_with_event(db, single_event):
         is_active=True,
     )
 
-
-@pytest.fixture
-def single_ticket_leasing_with_batck(db, single_batck_with_event):
-    return TicketLeasing.objects.create(
-        batck_id=single_batck_with_event,
-        name="default",
-        descroption="default",
-        is_active=True,
-        store_price=50.10,
-        sale_price=40.10,
-        student_price=25.10,
-    )
-
-
-@pytest.fixture
-def single_stock_with_ticket_leasing(db, single_ticket_leasing_with_batck):
-    return Stock.objects.create(
-        ticket_leasing_id=single_ticket_leasing_with_batck,
-        units=1,
-        units_sold=1,
-        last_checked=timezone.now(),
-    )
-
-
-@pytest.fixture
-def single_ticket_with_request_ticket_leasing(
-    db, single_request, single_ticket_leasing_with_batck
-):
-    return Ticket.objects.create(
-        request_id=single_request,
-        ticket_leasing_id=single_ticket_leasing_with_batck,
-        code="default",
-        is_student=False,
-        is_active=True,
-    )
 
 
 @pytest.fixture

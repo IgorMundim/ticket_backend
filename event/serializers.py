@@ -8,17 +8,16 @@ from event.models import (
     Event,
     Image,
     Leasing,
-    Ticket,
 )
 from rest_framework import serializers
 
 
 class CategorySerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="event_api:category-retrieve"
+        view_name="event:category-retrieve"
     )
     url_events = serializers.HyperlinkedIdentityField(
-        view_name="event_api:events-by-category"
+        view_name="event:events-by-category"
     )
 
     class Meta:
@@ -58,13 +57,13 @@ class ImageSerializer(serializers.ModelSerializer):
 
 class BasicEventSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="event_api:event-retrieve"
+        view_name="event:event-retrieve"
     )
     address = serializers.StringRelatedField()
     image = serializers.StringRelatedField()
     # event_url = serializers.HyperlinkedRelatedField(
     #     many=False,
-    #     view_name="event_api:event-retrieve",
+    #     view_name="event:event-retrieve",
     #     read_only=True,
     #     source="id",
     # )
@@ -88,7 +87,7 @@ class EventSerializer(serializers.ModelSerializer):
     # image = serializers.StringRelatedField()
     # producer = serializers.StringRelatedField()
     url = serializers.HyperlinkedIdentityField(
-        view_name="event_api:event-retrieve"
+        view_name="event:event-retrieve"
     )
     address = AddressSerializer(many=False)
     # producer = ProducerSerializer(many=False)
@@ -117,7 +116,7 @@ class EventSerializer(serializers.ModelSerializer):
 
 class BatchSerializers(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="event_api:batch-retrieve"
+        view_name="event:batch-retrieve"
     )
 
     class Meta:
@@ -164,7 +163,7 @@ class BatchSerializers(serializers.ModelSerializer):
 
 class LeasingSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="event_api:leasing-retrieve"
+        view_name="event:leasing-retrieve"
     )
 
     class Meta:
@@ -181,18 +180,4 @@ class LeasingSerializer(serializers.ModelSerializer):
             "units",
             "is_active",
             "url",
-        ]
-
-
-class TicketSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Ticket
-        fields = [
-            "id",
-            "sale_price",
-            "code",
-            "is_student",
-            "is_active",
-            "requisition",
-            "leasing",
         ]

@@ -7,7 +7,7 @@ from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from mptt.models import MPTTModel, TreeForeignKey
 
-from account.models import Account, Requisition
+from account.models import Account
 
 
 class Address(models.Model):
@@ -208,19 +208,19 @@ class Leasing(models.Model):
         return self.name
 
 
-class Ticket(models.Model):
-    requisition = models.ForeignKey(Requisition, on_delete=models.PROTECT)
-    leasing = models.ForeignKey(Leasing, on_delete=models.CASCADE)
-    sale_price = models.DecimalField(
-        verbose_name="sale price", max_digits=8, decimal_places=2
-    )
-    code = models.CharField(max_length=255)
-    is_student = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+# class Ticket(models.Model):
+#     requisition = models.ForeignKey(Requisition, on_delete=models.PROTECT)
+#     leasing = models.ForeignKey(Leasing, on_delete=models.CASCADE)
+#     sale_price = models.DecimalField(
+#         verbose_name="sale price", max_digits=8, decimal_places=2
+#     )
+#     code = models.CharField(max_length=255)
+#     is_student = models.BooleanField(default=False)
+#     is_active = models.BooleanField(default=True)
 
-    def __str__(self):
-        return self.code
+#     def __str__(self):
+#         return self.code
 
-    class Meta:
-        verbose_name = "ticket"
-        verbose_name_plural = "tickets"
+#     class Meta:
+#         verbose_name = "ticket"
+#         verbose_name_plural = "tickets"

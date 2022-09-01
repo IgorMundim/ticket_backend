@@ -1,32 +1,15 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-
-from account.models import Account, Address, Customer, Producer, Requisition
 from utils.validation import strong_password
 
+from account.models import Account, Address, Customer, Producer
 
-class RequisitionSerializer(serializers.ModelSerializer):
-    is_paid = serializers.StringRelatedField(read_only=True)
-    url = serializers.HyperlinkedIdentityField(
-        view_name="account_api:requisition-retrive",
-    )
-
-    class Meta:
-        model = Requisition
-        fields = [
-            "id",
-            "date_joined",
-            "is_paid",
-            "type_of_payment",
-            "account",
-            "url",
-        ]
 
 
 class AccountSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True, required=True)
     url = serializers.HyperlinkedIdentityField(
-        view_name="account_api:account-retrive",
+        view_name="account:account-retrive",
     )
 
     class Meta:
@@ -78,7 +61,7 @@ class AccountSerializer(serializers.ModelSerializer):
 
 class AddressSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="account_api:address-retrive",
+        view_name="account:address-retrive",
     )
 
     class Meta:
@@ -102,7 +85,7 @@ class AddressSerializer(serializers.ModelSerializer):
 
 class ProducerSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="account_api:producer-retrive",
+        view_name="account:producer-retrive",
     )
 
     class Meta:
@@ -121,7 +104,7 @@ class ProducerSerializer(serializers.ModelSerializer):
 
 class CustomerSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="account_api:customer-retrive",
+        view_name="account:customer-retrive",
     )
 
     class Meta:

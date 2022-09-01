@@ -1,6 +1,6 @@
 from django.urls import path
 
-from event_api.views import (
+from event.views import (
     BatchListCreate,
     BatchRetrieveUpdateDestroy,
     CategoryListCreate,
@@ -10,10 +10,9 @@ from event_api.views import (
     EventRetrieveUpdate,
     LeasingListCreate,
     LeasingRetrieveUpdate,
-    TicketListCreate,
 )
 
-app_name = "event_api"
+app_name = "event"
 
 urlpatterns = [
     path("", EventListCreate.as_view(), name="event-list"),
@@ -35,10 +34,6 @@ urlpatterns = [
         "leases/<int:pk>/",
         LeasingRetrieveUpdate.as_view(),
         name="leasing-retrieve",
-    ),
-    path(
-        "leases/<int:leasing_pk>/tickets/",
-        TicketListCreate.as_view(),
     ),
     path(
         "categories/",

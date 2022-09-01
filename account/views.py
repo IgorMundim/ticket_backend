@@ -2,10 +2,13 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.permissions import SAFE_METHODS, AllowAny, BasePermission
 
-from account.models import Account, Address, Customer, Producer, Requisition
-from account_api.serializers import (AccountSerializer, AddressSerializer,
-                                     CustomerSerializer, ProducerSerializer,
-                                     RequisitionSerializer)
+from account.models import Account, Address, Customer, Producer
+from account.serializers import (
+    AccountSerializer,
+    AddressSerializer,
+    CustomerSerializer,
+    ProducerSerializer,
+)
 
 
 class IsOwnerObject(BasePermission):
@@ -46,22 +49,6 @@ class AddressRetrieveUpdateDestroy(
 ):
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
-    permission_classes = [IsOwnerObject]
-
-
-class RequisitionListCreate(generics.ListCreateAPIView, IsOwner):
-    queryset = Requisition
-    serializer_class = RequisitionSerializer
-    permission_classes = [IsOwner]
-
-    def get_queryset(self):
-        qs = self.queryset.objects.filter(account=self.kwargs.get("pk"))
-        return qs
-
-
-class RequisitionRetriveUpdate(generics.RetrieveUpdateAPIView, IsOwnerObject):
-    queryset = Requisition.objects.all()
-    serializer_class = RequisitionSerializer
     permission_classes = [IsOwnerObject]
 
 

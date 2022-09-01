@@ -129,16 +129,16 @@ class Customer(models.Model):
         verbose_name_plural = "customers"
 
 
-class Requisition(models.Model):
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    date_joined = models.DateTimeField(
-        verbose_name="date joined", auto_now_add=True, editable=False
-    )
-    is_paid = models.BooleanField(default=False)
-    type_of_payment = models.DecimalField(
-        verbose_name="type of payment", max_digits=2, decimal_places=0
-    )
+# class Requisition(models.Model):
+#     account = models.ForeignKey(Account, on_delete=models.CASCADE)
+#     date_joined = models.DateTimeField(
+#         verbose_name="date joined", auto_now_add=True, editable=False
+#     )
+#     is_paid = models.BooleanField(default=False)
+#     type_of_payment = models.DecimalField(
+#         verbose_name="type of payment", max_digits=2, decimal_places=0
+#     )
 
-    class Meta:
-        verbose_name = "requisition"
-        verbose_name_plural = "requisitions"
+#     class Meta:
+#         verbose_name = "requisition"
+#         verbose_name_plural = "requisitions"

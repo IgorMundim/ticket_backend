@@ -6,8 +6,9 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/v1/events/", include("event_api.urls", namespace="event_api")),
-    path("api/v1/accounts/", include("account_api.urls", namespace="account_api")),
+    path("api/v1/events/", include("event.urls", namespace="event")),
+    path("api/v1/accounts/", include("account.urls", namespace="account")),
+    path("api/v1/accounts/", include("order.urls", namespace="order")),
     path("__debug__/", include("debug_toolbar.urls")),
     path("api-auth/", include("rest_framework.urls")),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

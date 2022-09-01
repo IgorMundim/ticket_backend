@@ -1,12 +1,12 @@
 from django.urls import path
 
-from account_api.views import (AccountCreate, AccountRetriveUpdate,
+from account.views import (AccountCreate, AccountRetriveUpdate,
                                AddressListCreate, AddressRetrieveUpdateDestroy,
                                CustomerCreate, CustomerRetriveUpdate,
                                ProducerCreate, ProducerRetriveUpdate,
-                               RequisitionListCreate, RequisitionRetriveUpdate)
+                               )
 
-app_name = "account_api"
+app_name = "account"
 
 urlpatterns = [
     path(
@@ -17,15 +17,6 @@ urlpatterns = [
         "<int:pk>/",
         AccountRetriveUpdate.as_view(), 
         name="account-retrive",
-    ),
-    path(
-        "<int:pk>/requisitions/",
-        RequisitionListCreate.as_view(),
-    ),
-    path(
-        "requisitions/<int:pk>/",
-        RequisitionRetriveUpdate.as_view(),
-        name="requisition-retrive"
     ),
     path(
         "<int:pk>/addresses/",

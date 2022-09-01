@@ -1,7 +1,6 @@
 import pytest
 
-from account.models import (Account, Address, Customer, Producer, Request,
-                            Telephone)
+from account.models import Account, Address, Customer, Producer
 
 
 @pytest.fixture
@@ -69,15 +68,6 @@ def single_producer(db, account_producer):
 
 
 @pytest.fixture
-def single_request(db, single_customer):
-    return Request.objects.create(
-        customer_id=single_customer,
-        is_paid=True,
-        type_of_payment="2",
-    )
-
-
-@pytest.fixture
 def create_address_account(db, single_account):
     return Address.objects.create(
         account_id=single_account,
@@ -106,12 +96,3 @@ def single_customer(db, account_customer):
     )
 
 
-@pytest.fixture
-def telephone_wite_account(db, single_account):
-    return Telephone.objects.create(
-        account_id=single_account,
-        code="999",
-        telephone="default",
-        type="1",
-        description="default",
-    )

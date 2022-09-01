@@ -3,12 +3,11 @@ from rest_framework import generics
 from rest_framework.permissions import (SAFE_METHODS, BasePermission,
                                         IsAuthenticatedOrReadOnly)
 
-from account.models import Requisition
-from event.models import Batch, Category, Event, Leasing, Ticket
+from event.models import Batch, Category, Event, Leasing
 
 from .serializers import (AddressSerializer, BasicEventSerializer,
                           BatchSerializers, CategorySerializer,
-                          EventSerializer, LeasingSerializer, TicketSerializer)
+                          EventSerializer, LeasingSerializer)
 
 
 class IsSuperUser(BasePermission):
@@ -44,27 +43,6 @@ class IsOwnerObject(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         return bool(obj.event.account_id is not None and obj.event.account_id == request.user.id)          
-
-
-
-class IsOwnerTicket(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return False
-
-    def has_permission(self, request, view):
-        if request.method in SAFE_METHODS:
-            return True
-        owner = (
-            Requisition.objects.filter(id=request.data["requisition"])
-            .values("account")
-            .first()
-        )
-
-        return bool(
-            owner["account"]
-            and request.user.id
-            and owner["account"] == request.user.id
-        )
 
 
 class CategoryListCreate(generics.ListCreateAPIView, IsSuperUser):
@@ -153,8 +131,3 @@ class LeasingRetrieveUpdate(generics.RetrieveUpdateAPIView, IsOwnerObject):
     permission_classes = [IsOwnerObject]
 
 
-
-class TicketListCreate(generics.ListCreateAPIView, IsOwnerTicket):
-    queryset = Ticket.objects.all().select_related("leasing", "requisition")
-    serializer_class = TicketSerializer
-    permission_classes = [IsOwnerTicket]
