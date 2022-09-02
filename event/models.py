@@ -11,13 +11,13 @@ from account.models import Account
 
 
 class Address(models.Model):
-    cep = models.CharField(max_length=8)
+    zipcode = models.CharField(max_length=8)
     complement = models.CharField(max_length=150)
     city = models.CharField(max_length=100)
-    district = models.CharField(max_length=100)
+    neighborhood = models.CharField(max_length=100)
     number = models.IntegerField()
     roud = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
+    street = models.CharField(max_length=100)
     uf = models.CharField(max_length=2)
 
     def __str__(self):
@@ -38,19 +38,12 @@ class Image(models.Model):
 
     def __str__(self):
         return "%s" % (self.image_url)
-        # return "%s | " % (self.image_url)
+
 
     class Meta:
         verbose_name = "image"
         verbose_name_plural = "images"
 
-
-class EventManager(models.Manager):
-    def get_event(self):
-        return (
-            self.filter(is_published=True).order_by("-id")
-            # .select_related("producer", "address")
-        )
 
 
 class Category(models.Model):
@@ -73,6 +66,14 @@ class Category(models.Model):
         verbose_name_plural = "categories"
 
 
+class EventManager(models.Manager):
+    def get_event(self):
+        return (
+            self.filter(is_published=True).order_by("-id")
+            # .select_related("producer", "address")
+        )
+
+
 class Event(models.Model):
     objects = EventManager()
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
@@ -87,15 +88,18 @@ class Event(models.Model):
     in_room = models.BooleanField(verbose_name="in room", default=True)
     date_end = models.DateTimeField(verbose_name="date end")
     date_start = models.DateTimeField(verbose_name="date start")
-    description = models.CharField(max_length=250)
+    description = models.TextField()
     is_virtual = models.BooleanField(default=False)
     video_url = models.CharField(verbose_name="video url", max_length=200)
     is_published = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "event"
         verbose_name_plural = "events"
 
@@ -144,6 +148,7 @@ class Batch(models.Model):
     batch_stop_date = models.DateTimeField(verbose_name="batch stop date")
     description = models.CharField(max_length=150)
     is_active = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.description
@@ -203,6 +208,7 @@ class Leasing(models.Model):
     )
     units_solid = models.IntegerField()
     units = models.IntegerField()
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name

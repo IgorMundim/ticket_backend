@@ -5,7 +5,6 @@ from utils.validation import strong_password
 from account.models import Account, Address, Customer, Producer
 
 
-
 class AccountSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True, required=True)
     url = serializers.HyperlinkedIdentityField(
@@ -35,11 +34,12 @@ class AccountSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        account = Account.objects.create(
+        
+        account = Account.objects.create_user(
             validated_data["email"],
             validated_data["username"],
-            validated_data.get("profile_image",""),
             validated_data["password"],
+            validated_data.get("profile_image",""),
         )
         return account
 
