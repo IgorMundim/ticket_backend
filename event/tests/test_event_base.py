@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 
-from event.models import Address, Category, Event, Image
+from event.models import Address, Batch, Category, Event, Image, Leasing
 
 class EventMixin:
     def make_address(
@@ -51,13 +51,14 @@ class EventMixin:
             image=None,
             name="Show beneficiente",
             in_room=True,
-            date_end="2019-03-28 15:14:19",
-            date_start="2019-03-28 15:14:19",
+            date_end="2022-12-01",
+            date_start="2022-12-28",
             description="descrição",
             is_virtual=False,
             video_url="www.you.com",
             is_published="True",
         ):
+            
             return Event.objects.create(
                 account=account,
                 address=address,
@@ -71,6 +72,46 @@ class EventMixin:
                 video_url=video_url,
                 is_published=is_published,
             )
+    def make_batch(
+        self,
+        event=None,
+        percentage="5.0",
+        sales_qtd="0",
+        batch_stop_date="2022-12-10",
+        description="batch start",
+        is_active=True,
+        ):
+            return Batch.objects.create(
+                event=event,
+                percentage=percentage,
+                sales_qtd=sales_qtd,
+                batch_stop_date=batch_stop_date,
+                description=description,
+                is_active=is_active,
+            )
+    def make_leasing(
+        self,
+        event=None,
+        name="Bloco A",
+        descroption="Proximo ao balhero",
+        is_active=True,
+        store_price="100.00",
+        sale_price="110.00",
+        student_price="60.00",
+        units_solid=0,
+        units=10,
+    ):
+        return Leasing.objects.create(    
+            event=event,
+            name=name,
+            descroption=descroption,
+            is_active=is_active,
+            store_price=store_price,
+            sale_price=sale_price,
+            student_price=student_price,
+            units_solid=units_solid,
+            units=units,
+        )
 
 class EventTestBase(TestCase,EventMixin):
     def setUp(self) -> None:
