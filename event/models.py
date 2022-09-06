@@ -78,8 +78,10 @@ class Event(models.Model):
         null=True,
         )
 
-    categories = models.ManyToManyField(Category, blank=True, null=True)
-    image = models.OneToOneField(Image, on_delete=models.PROTECT, blank=True, null=True)
+    categories = models.ManyToManyField(Category, blank=True,)
+    image = models.OneToOneField(
+        Image, on_delete=models.PROTECT, blank=True, null=True
+    )
     name = models.CharField(max_length=100)
     in_room = models.BooleanField(verbose_name="in room", default=True)
     date_end = models.DateTimeField(verbose_name="date end")
