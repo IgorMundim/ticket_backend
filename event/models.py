@@ -1,11 +1,8 @@
-from datetime import date
-from os import truncate
 from typing import Any
 
 from django.db import models
-from django.db.models import Count, Q, Sum
+from django.db.models import Q
 from django.utils import timezone
-from mptt.models import MPTTModel, TreeForeignKey
 
 from account.models import Account
 
@@ -16,7 +13,6 @@ class Address(models.Model):
     city = models.CharField(max_length=100)
     neighborhood = models.CharField(max_length=100)
     number = models.IntegerField()
-    roud = models.CharField(max_length=100)
     street = models.CharField(max_length=100)
     uf = models.CharField(max_length=2)
 
@@ -39,11 +35,9 @@ class Image(models.Model):
     def __str__(self):
         return "%s" % (self.image_url)
 
-
     class Meta:
         verbose_name = "image"
         verbose_name_plural = "images"
-
 
 
 class Category(models.Model):
@@ -77,13 +71,15 @@ class EventManager(models.Manager):
 class Event(models.Model):
     objects = EventManager()
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    address = models.ForeignKey(
+    address = models.OneToOneField(
         Address,
         on_delete=models.PROTECT,
-    )
+        blank=True,
+        null=True,
+        )
 
-    categories = models.ManyToManyField(Category, blank=True)
-    image = models.OneToOneField(Image, on_delete=models.PROTECT)
+    categories = models.ManyToManyField(Category, blank=True, null=True)
+    image = models.OneToOneField(Image, on_delete=models.PROTECT, blank=True, null=True)
     name = models.CharField(max_length=100)
     in_room = models.BooleanField(verbose_name="in room", default=True)
     date_end = models.DateTimeField(verbose_name="date end")
@@ -206,27 +202,9 @@ class Leasing(models.Model):
         blank=True,
         default="0.00",
     )
-    units_solid = models.IntegerField()
+    units_solid = models.IntegerField(default=0)
     units = models.IntegerField()
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
-
-
-# class Ticket(models.Model):
-#     requisition = models.ForeignKey(Requisition, on_delete=models.PROTECT)
-#     leasing = models.ForeignKey(Leasing, on_delete=models.CASCADE)
-#     sale_price = models.DecimalField(
-#         verbose_name="sale price", max_digits=8, decimal_places=2
-#     )
-#     code = models.CharField(max_length=255)
-#     is_student = models.BooleanField(default=False)
-#     is_active = models.BooleanField(default=True)
-
-#     def __str__(self):
-#         return self.code
-
-#     class Meta:
-#         verbose_name = "ticket"
-#         verbose_name_plural = "tickets"

@@ -1,20 +1,11 @@
-from dataclasses import fields
-from urllib import request
-
-from event.models import (
-    Address,
-    Batch,
-    Category,
-    Event,
-    Image,
-    Leasing,
-)
 from rest_framework import serializers
+
+from event.models import Address, Batch, Category, Event, Image, Leasing
 
 
 class CategorySerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="event:category-retrieve"
+        view_name="event:category-retrieve-update"
     )
     url_events = serializers.HyperlinkedIdentityField(
         view_name="event:events-by-category"
@@ -37,27 +28,34 @@ class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
         fields = [
-            "id",
-            "cep",
+            "zipcode",
             "complement",
             "city",
-            "district",
+            "neighborhood",
             "number",
-            "roud",
-            "state",
+            "street",
             "uf",
         ]
 
 
 class ImageSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name="event:image-retrieve-update-destroy"
+    )
     class Meta:
         model = Image
-        fields = ["id", "image_url", "alt_text"]
+        fields = [
+            "id",
+            "event",
+            "image_url",
+            "alt_text",
+            "url"
+            ]
 
 
 class BasicEventSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="event:event-retrieve"
+        view_name="event:event-retrieve-update"
     )
     address = serializers.StringRelatedField()
     image = serializers.StringRelatedField()
@@ -87,7 +85,7 @@ class EventSerializer(serializers.ModelSerializer):
     # image = serializers.StringRelatedField()
     # producer = serializers.StringRelatedField()
     url = serializers.HyperlinkedIdentityField(
-        view_name="event:event-retrieve"
+        view_name="event:event-retrieve-update"
     )
     address = AddressSerializer(many=False)
     # producer = ProducerSerializer(many=False)
@@ -114,9 +112,30 @@ class EventSerializer(serializers.ModelSerializer):
         ]
 
 
+class EventCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Event
+        fields = [
+            "id",
+            "name",
+            "in_room",
+            "date_end",
+            "date_start",
+            "description",
+            "is_virtual",
+            "video_url",
+            "is_published",
+            "address",
+            "account",
+            "image",
+            "categories",
+        ]
+
+
 class BatchSerializers(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="event:batch-retrieve"
+        view_name="event:batch-retrieve-update"
     )
 
     class Meta:
@@ -135,20 +154,23 @@ class BatchSerializers(serializers.ModelSerializer):
     def validate(self, attrs):
         sales_qtd = attrs.get("sales_qtd")
         batch_stop_date = attrs.get("batch_stop_date")
-
         if self._context["request"]._stream.method == "POST":
-
             batch = Batch.objects.filter_by_saler(
                 event_pk=self.initial_data["event"],
                 sales_qtd=sales_qtd,
                 batch_stop_date=batch_stop_date,
             )
             if batch is not None:
-                raise serializers.ValidationError("ERROR")
+                raise serializers.ValidationError(
+                    "Conflict between created lots"
+                )
             return super().validate(attrs)
-
+        
+        if self._context["request"]._stream.method == "PATCH":
+            raise serializers.ValidationError(
+                    "Method is not allowed"
+            )       
         event_pk = self.initial_data["event"]
-
         id = self.instance.id
         if not Batch.objects.is_valid_change(
             id=id,
@@ -163,7 +185,7 @@ class BatchSerializers(serializers.ModelSerializer):
 
 class LeasingSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="event:leasing-retrieve"
+        view_name="event:leasing-retrieve-update"
     )
 
     class Meta:
@@ -181,3 +203,16 @@ class LeasingSerializer(serializers.ModelSerializer):
             "is_active",
             "url",
         ]
+
+        read_only_fields = ["sale_price", "student_price", "units_solid"]
+
+    def validate_units(self, value):
+        if self._context["request"]._stream.method != "POST": 
+            leasing = Leasing.objects.filter(
+                id=self._context['request'].parser_context['kwargs']['pk']
+            ).first()
+            if value < leasing.units_solid:
+                raise serializers.ValidationError(
+                    'Units sold is greater than the quantity available.'
+                )
+        return value

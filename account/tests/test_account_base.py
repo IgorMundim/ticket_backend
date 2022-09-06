@@ -1,5 +1,7 @@
+
 from account.models import Account, Address, Customer, Producer
 from django.test import TestCase
+from django.urls import reverse
 
 
 class AccountMixin:
@@ -72,6 +74,7 @@ class AccountMixin:
             state_registration=state_registration,
             municype_registration=municype_registration,
         )
+    
     def make_customer(
         self,
         account=None,
@@ -87,6 +90,55 @@ class AccountMixin:
             cpf=cpf,
             britday=britday,
         )
+
+    def get_jwt_acess_token_super_user(self):
+        userdata = {
+            "username": "username",
+            "password": "@Abc12345",
+            "email": "superusercheck@user.com"
+        }
+
+        self.make_account_super_user(
+            username=userdata.get("username"),
+            password=userdata.get("password"),
+            email=userdata.get("email")
+        )
+
+        response = self.client.post(
+            reverse("token_obtain_pair"),
+            data={**userdata}
+        )
+        return response.data.get("access")
+
+    def get_jwt_acess_token_simple_user(self):
+        userdata = {
+            "username": "simpleuser",
+            "password": "@Abc12345",
+            "email": "simpleuser@user.com"
+        }
+
+        self.make_account_create_user(
+            username=userdata.get("username"),
+            password=userdata.get("password"),
+            email=userdata.get("email")
+        )
+        response = self.client.post(
+            reverse("token_obtain_pair"),
+            data={**userdata}
+        )
+        return response.data.get("access")
+
+    def get_login_jwt(self, account):
+        userdata = {
+            "username": f"{account.username}",
+            "password": "@Abc12345",
+            "email": f"{account.email}"
+        }
+        response = self.client.post(
+            reverse("token_obtain_pair"),
+            data={**userdata}
+        )
+        return response.data.get("access")
 
 
 class AccountTestBase(TestCase, AccountMixin):

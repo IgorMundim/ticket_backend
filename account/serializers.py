@@ -8,7 +8,7 @@ from account.models import Account, Address, Customer, Producer
 class AccountSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True, required=True)
     url = serializers.HyperlinkedIdentityField(
-        view_name="account:account-retrive",
+        view_name="account:account-retrieve-update",
     )
 
     class Meta:
@@ -25,21 +25,27 @@ class AccountSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {"password": {"write_only": True, "min_length": 8}}
 
+    def validate_password(self, value):
+        strong_password(value)
+        return value
+
     def validate(self, attrs):
-        strong_password(attrs["password"])
-        if attrs["password"] != attrs["password2"]:
+        if (
+            attrs.get("password", False)
+            and attrs["password"] != attrs["password2"]
+        ):
             raise serializers.ValidationError(
                 {"password": "Password fields didn't match."}
             )
         return attrs
 
     def create(self, validated_data):
-        
+
         account = Account.objects.create_user(
             validated_data["email"],
             validated_data["username"],
             validated_data["password"],
-            validated_data.get("profile_image",""),
+            validated_data.get("profile_image", ""),
         )
         return account
 
@@ -61,7 +67,7 @@ class AccountSerializer(serializers.ModelSerializer):
 
 class AddressSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="account:address-retrive",
+        view_name="account:address-retrieve-update",
     )
 
     class Meta:
@@ -70,22 +76,21 @@ class AddressSerializer(serializers.ModelSerializer):
             "id",
             "account",
             "telephone",
-            "cep",
+            "zipcode",
             "complement",
             "city",
-            "district",
+            "neighborhood",
             "number",
-            "roud",
-            "state",
+            "street",
             "uf",
             "types",
-            "url",
+            "url"
         ]
 
 
 class ProducerSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="account:producer-retrive",
+        view_name="account:producer-retrieve-update",
     )
 
     class Meta:
@@ -104,7 +109,7 @@ class ProducerSerializer(serializers.ModelSerializer):
 
 class CustomerSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="account:customer-retrive",
+        view_name="account:customer-retrieve-update",
     )
 
     class Meta:
