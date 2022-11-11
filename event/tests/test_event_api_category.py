@@ -1,7 +1,8 @@
-from account.tests.test_account_base import AccountMixin
 from django.urls import reverse
-from event.tests.test_event_base import EventMixin
 from rest_framework import test
+
+from account.tests.test_account_base import AccountMixin
+from event.tests.test_event_base import EventMixin
 
 
 class EventApiv1TestCategory(test.APITestCase, EventMixin, AccountMixin):
@@ -12,6 +13,7 @@ class EventApiv1TestCategory(test.APITestCase, EventMixin, AccountMixin):
             "is_active": "true",
             "alt_text": "Test post",
         }
+        self.app()
         return super().setUp()
 
     def test_categories_api_list_returns_status_code_200(self):

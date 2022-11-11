@@ -1,8 +1,13 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from utils.validation import strong_password
 
 from account.models import Account, Address, Customer, Producer
+from utils.validation import strong_password
+
+
+class UsersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ["id"]
 
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -84,7 +89,7 @@ class AddressSerializer(serializers.ModelSerializer):
             "street",
             "uf",
             "types",
-            "url"
+            "url",
         ]
 
 
@@ -123,3 +128,28 @@ class CustomerSerializer(serializers.ModelSerializer):
             "britday",
             "url",
         ]
+
+
+class CustomerPostSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name="account:customer-retrieve-update",
+    )
+
+    class Meta:
+        model = Customer
+        fields = [
+            "id",
+            "account",
+            "first_name",
+            "last_name",
+            "cpf",
+            "britday",
+            "url",
+        ]
+
+    def validate_account(self, value):
+        if str(value.id) != str(
+            self._context["request"].parser_context["kwargs"]["pk"]
+        ):
+            raise serializers.ValidationError("Account Invalid")
+        return value

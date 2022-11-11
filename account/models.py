@@ -5,7 +5,6 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.db import models
-from utils.validation import strong_password
 
 
 class AccountManage(BaseUserManager):
@@ -15,7 +14,7 @@ class AccountManage(BaseUserManager):
     """
 
     def create_user(
-        self, email, username, password, profile_image, **other_fields
+        self, email, username, password="", profile_image="", **other_fields
     ):
         """
         Create and save a User with the given email and password.
@@ -31,7 +30,7 @@ class AccountManage(BaseUserManager):
             profile_image=profile_image,
             **other_fields
         )
-        strong_password(password)
+        # strong_password(password)
 
         user.set_password(password)
         user.save(using=self._db)
@@ -58,7 +57,7 @@ class AccountManage(BaseUserManager):
 
 class Account(AbstractBaseUser, PermissionsMixin):
     last_login = models.DateTimeField(verbose_name="last login", auto_now=True)
-    username = models.CharField(max_length=60, unique=True)
+    username = models.CharField(max_length=60)
     email = models.CharField(max_length=60, unique=True)
     profile_image = models.ImageField(
         upload_to="account/covers/%Y/%m/%d/", blank=True, default=""
@@ -88,14 +87,14 @@ class Account(AbstractBaseUser, PermissionsMixin):
 class Address(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, blank=True)
     telephone = models.CharField(max_length=20, default="")
-    zipcode = models.CharField(max_length=8)
+    zipcode = models.CharField(max_length=10)
     complement = models.CharField(max_length=150, default="")
     city = models.CharField(max_length=100, default="")
     neighborhood = models.CharField(max_length=100)
     number = models.IntegerField()
     street = models.CharField(max_length=100)
     uf = models.CharField(max_length=2)
-    types = models.IntegerField()
+    types = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return "%s - %s" % (self.city, self.uf)
@@ -131,8 +130,8 @@ class Customer(models.Model):
     account = models.OneToOneField(Account, on_delete=models.CASCADE)
     first_name = models.CharField(verbose_name="first name", max_length=100)
     last_name = models.CharField(verbose_name="last name", max_length=100)
-    cpf = models.CharField(max_length=8)
-    britday = models.DateField()
+    cpf = models.CharField(max_length=15)
+    britday = models.DateField(blank=True, null=True)
 
     def __str__(self):
         return "%s %s" % (self.first_name, self.last_name)
