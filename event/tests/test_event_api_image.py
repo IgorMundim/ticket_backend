@@ -1,20 +1,21 @@
-from account.tests.test_account_base import AccountMixin
+import tempfile
+
 from django.urls import reverse
-from event.tests.test_event_base import EventMixin
+from PIL import Image
 from rest_framework import test
 
-from PIL import Image
-import tempfile
+from account.tests.test_account_base import AccountMixin
+from event.tests.test_event_base import EventMixin
 
 
 def temporary_image():
     """
     Returns a new temporary image file
     """
-    image = Image.new('RGB', (100, 100))
-    tmp_file = tempfile.NamedTemporaryFile(suffix='.jpg')
-    image.save(tmp_file, 'jpeg')
-    tmp_file.seek(0)  
+    image = Image.new("RGB", (100, 100))
+    tmp_file = tempfile.NamedTemporaryFile(suffix=".jpg")
+    image.save(tmp_file, "jpeg")
+    tmp_file.seek(0)
     return tmp_file
 
 
@@ -23,14 +24,15 @@ class EventApiv1Testimage(test.APITestCase, EventMixin, AccountMixin):
         self.image = self.make_image()
         self.account = self.make_account_create_user(
             email="event@user.com", username="eventusername"
-        )        
+        )
         self.make_event_two(self.account)
         self.event_active = self.make_event(self.account)
         self.data = {
             "image_url": temporary_image(),
             "alt_text": "descrição",
-            "event": f"{self.event_active.id}"
+            "event": f"{self.event_active.id}",
         }
+        self.app()
         return super().setUp()
 
     def test_image_list(self):
@@ -73,7 +75,7 @@ class EventApiv1Testimage(test.APITestCase, EventMixin, AccountMixin):
             HTTP_AUTHORIZATION=f"Bearer {self.get_jwt_acess_token_super_user()}",  # noqa: E501
         )
         self.assertEqual(response.status_code, 403)
-    
+
     def test_image_update(self):
         response = self.client.patch(
             reverse(
@@ -84,7 +86,7 @@ class EventApiv1Testimage(test.APITestCase, EventMixin, AccountMixin):
             HTTP_AUTHORIZATION=f"Bearer {self.get_login_jwt(self.account)}",
         )
         self.assertEqual(response.status_code, 200)
-    
+
     def test_image_update_with_anonymous_user(self):
         response = self.client.patch(
             reverse(
@@ -115,7 +117,7 @@ class EventApiv1Testimage(test.APITestCase, EventMixin, AccountMixin):
             HTTP_AUTHORIZATION=f"Bearer {self.get_login_jwt(self.account)}",
         )
         self.assertEqual(response.status_code, 200)
-    
+
     def test_image_destroy_with_anonymous_user(self):
         response = self.client.patch(
             reverse(

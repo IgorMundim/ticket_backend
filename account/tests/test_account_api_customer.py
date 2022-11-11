@@ -1,11 +1,10 @@
+from django.urls import reverse
+from rest_framework import test
 
 from account.tests.test_account_base import AccountMixin
-from rest_framework import test
-from django.urls import reverse
 
 
 class AccountTestApiCustomer(test.APITestCase, AccountMixin):
-
     def setUp(self) -> None:
         self.account = self.make_account_create_user()
         self.account_two = self.make_account_create_user(
@@ -22,15 +21,16 @@ class AccountTestApiCustomer(test.APITestCase, AccountMixin):
             "cpf": "57455610",
             "britday": "2000-01-01",
         }
+        self.app()
         return super().setUp()
-    
+
     def test_create_simple_customer(self):
         response = self.client.post(
             reverse("account:customer-create", args=(self.account_two.id,)),
             data=self.data,
             HTTP_AUTHORIZATION=(
                 f"Bearer {self.get_login_jwt(self.account_two)}"
-            ), 
+            ),
         )
         self.assertEqual(response.status_code, 201)
 
@@ -45,17 +45,14 @@ class AccountTestApiCustomer(test.APITestCase, AccountMixin):
         response = self.client.post(
             reverse("account:customer-create", args=(self.account_two.id,)),
             data=self.data,
-            HTTP_AUTHORIZATION=(
-                f"Bearer {self.get_login_jwt(self.account)}"
-            ), 
-        )   
+            HTTP_AUTHORIZATION=(f"Bearer {self.get_login_jwt(self.account)}"),
+        )
         self.assertEqual(response.status_code, 403)
 
     def test_retrieve_simple_customer_with_anonymouse_user(self):
         response = self.client.get(
             reverse(
-                "account:customer-retrieve-update",
-                args=(self.customer.id,)
+                "account:customer-retrieve-update", args=(self.customer.id,)
             )
         )
         self.assertEqual(response.status_code, 401)
@@ -63,24 +60,20 @@ class AccountTestApiCustomer(test.APITestCase, AccountMixin):
     def test_retrieve_simple_customer(self):
         response = self.client.get(
             reverse(
-                "account:customer-retrieve-update",
-                args=(self.customer.id,)
+                "account:customer-retrieve-update", args=(self.customer.id,)
             ),
-            HTTP_AUTHORIZATION=(
-                f"Bearer {self.get_login_jwt(self.account)}"
-            )
+            HTTP_AUTHORIZATION=(f"Bearer {self.get_login_jwt(self.account)}"),
         )
         self.assertEqual(response.status_code, 200)
 
     def test_retrieve_simple_customer_is_not_owner(self):
         response = self.client.get(
             reverse(
-                "account:customer-retrieve-update",
-                args=(self.customer.id,)
+                "account:customer-retrieve-update", args=(self.customer.id,)
             ),
             HTTP_AUTHORIZATION=(
                 f"Bearer {self.get_jwt_acess_token_simple_user()}"
-            )
+            ),
         )
         self.assertEqual(response.status_code, 403)
 
@@ -91,7 +84,7 @@ class AccountTestApiCustomer(test.APITestCase, AccountMixin):
             ),
             data={"last_name": "partialupdate"},
         )
-        self.assertEqual(response.status_code, 401) 
+        self.assertEqual(response.status_code, 401)
 
     def test_update_simple_customer(self):
         response = self.client.patch(
@@ -99,9 +92,7 @@ class AccountTestApiCustomer(test.APITestCase, AccountMixin):
                 "account:customer-retrieve-update", args=(self.account.id,)
             ),
             data={"last_name": "partialupdate"},
-            HTTP_AUTHORIZATION=(
-                f"Bearer {self.get_login_jwt(self.account)}"
-            )
+            HTTP_AUTHORIZATION=(f"Bearer {self.get_login_jwt(self.account)}"),
         )
         self.assertEqual(response.status_code, 200)
 
@@ -113,6 +104,6 @@ class AccountTestApiCustomer(test.APITestCase, AccountMixin):
             data={"last_name": "partialupdate"},
             HTTP_AUTHORIZATION=(
                 f"Bearer {self.get_jwt_acess_token_simple_user()}"
-            )
+            ),
         )
         self.assertEqual(response.status_code, 403)

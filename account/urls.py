@@ -9,11 +9,13 @@ from account.views import (
     CustomerRetriveUpdate,
     ProducerCreate,
     ProducerRetriveUpdate,
+    CurrentUser
 )
 
 app_name = "account"
 
 urlpatterns = [
+    path('current/', CurrentUser.as_view(), name="current"),
     path(
         "",
         AccountCreate.as_view(),

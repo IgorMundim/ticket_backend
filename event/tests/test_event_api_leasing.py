@@ -1,7 +1,8 @@
-from account.tests.test_account_base import AccountMixin
 from django.urls import reverse
-from event.tests.test_event_base import EventMixin
 from rest_framework import test
+
+from account.tests.test_account_base import AccountMixin
+from event.tests.test_event_base import EventMixin
 
 
 class EventApiv1TestLeasing(test.APITestCase, EventMixin, AccountMixin):
@@ -9,7 +10,7 @@ class EventApiv1TestLeasing(test.APITestCase, EventMixin, AccountMixin):
         self.make_image()
         self.account = self.make_account_create_user(
             email="event@user.com", username="eventusername"
-        )        
+        )
         self.make_event_two(self.account)
         self.event_active = self.make_event(self.account)
         self.batch = self.make_batch(event=self.event_active)
@@ -22,6 +23,7 @@ class EventApiv1TestLeasing(test.APITestCase, EventMixin, AccountMixin):
             "store_price": "100",
             "units": "1",
         }
+        self.app()
         return super().setUp()
 
     def test_leasing_list(self):
@@ -43,7 +45,7 @@ class EventApiv1TestLeasing(test.APITestCase, EventMixin, AccountMixin):
             HTTP_AUTHORIZATION=f"Bearer {self.get_login_jwt(self.account)}",
         )
         self.assertEqual(response.status_code, 201)
-    
+
     def test_leasing_create_with_anonymous_user(self):
         response = self.client.post(
             reverse(
@@ -64,7 +66,7 @@ class EventApiv1TestLeasing(test.APITestCase, EventMixin, AccountMixin):
             HTTP_AUTHORIZATION=f"Bearer {self.get_jwt_acess_token_super_user()}",  # noqa: E501
         )
         self.assertEqual(response.status_code, 403)
-    
+
     def test_leasing_update(self):
         response = self.client.patch(
             reverse(
@@ -107,5 +109,3 @@ class EventApiv1TestLeasing(test.APITestCase, EventMixin, AccountMixin):
             HTTP_AUTHORIZATION=f"Bearer {self.get_login_jwt(self.account)}",
         )
         self.assertEqual(response.status_code, 400)
-
-    

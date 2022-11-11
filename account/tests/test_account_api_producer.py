@@ -1,11 +1,10 @@
+from django.urls import reverse
+from rest_framework import test
 
 from account.tests.test_account_base import AccountMixin
-from rest_framework import test
-from django.urls import reverse
 
 
 class AccountTestApiProducer(test.APITestCase, AccountMixin):
-
     def setUp(self) -> None:
         self.account = self.make_account_create_user()
         self.account_two = self.make_account_create_user(
@@ -23,15 +22,16 @@ class AccountTestApiProducer(test.APITestCase, AccountMixin):
             "state_registration": "101578",
             "municype_registration": "1452526",
         }
+        self.app()
         return super().setUp()
-    
+
     def test_create_simple_producer(self):
         response = self.client.post(
             reverse("account:producer-create", args=(self.account_two.id,)),
             data=self.data,
             HTTP_AUTHORIZATION=(
                 f"Bearer {self.get_login_jwt(self.account_two)}"
-            ), 
+            ),
         )
         self.assertEqual(response.status_code, 201)
 
@@ -46,17 +46,14 @@ class AccountTestApiProducer(test.APITestCase, AccountMixin):
         response = self.client.post(
             reverse("account:producer-create", args=(self.account_two.id,)),
             data=self.data,
-            HTTP_AUTHORIZATION=(
-                f"Bearer {self.get_login_jwt(self.account)}"
-            ), 
-        )   
+            HTTP_AUTHORIZATION=(f"Bearer {self.get_login_jwt(self.account)}"),
+        )
         self.assertEqual(response.status_code, 403)
 
     def test_retrieve_simple_producer_with_anonymouse_user(self):
         response = self.client.get(
             reverse(
-                "account:producer-retrieve-update",
-                args=(self.producer.id,)
+                "account:producer-retrieve-update", args=(self.producer.id,)
             )
         )
         self.assertEqual(response.status_code, 401)
@@ -64,24 +61,20 @@ class AccountTestApiProducer(test.APITestCase, AccountMixin):
     def test_retrieve_simple_producer(self):
         response = self.client.get(
             reverse(
-                "account:producer-retrieve-update",
-                args=(self.producer.id,)
+                "account:producer-retrieve-update", args=(self.producer.id,)
             ),
-            HTTP_AUTHORIZATION=(
-                f"Bearer {self.get_login_jwt(self.account)}"
-            )
+            HTTP_AUTHORIZATION=(f"Bearer {self.get_login_jwt(self.account)}"),
         )
         self.assertEqual(response.status_code, 200)
 
     def test_retrieve_simple_producer_is_not_owner(self):
         response = self.client.get(
             reverse(
-                "account:producer-retrieve-update",
-                args=(self.producer.id,)
+                "account:producer-retrieve-update", args=(self.producer.id,)
             ),
             HTTP_AUTHORIZATION=(
                 f"Bearer {self.get_jwt_acess_token_simple_user()}"
-            )
+            ),
         )
         self.assertEqual(response.status_code, 403)
 
@@ -92,7 +85,7 @@ class AccountTestApiProducer(test.APITestCase, AccountMixin):
             ),
             data={"fantasy_name": "partialupdate"},
         )
-        self.assertEqual(response.status_code, 401) 
+        self.assertEqual(response.status_code, 401)
 
     def test_update_simple_producer(self):
         response = self.client.patch(
@@ -100,9 +93,7 @@ class AccountTestApiProducer(test.APITestCase, AccountMixin):
                 "account:producer-retrieve-update", args=(self.account.id,)
             ),
             data={"fantasy_name": "partialupdate"},
-            HTTP_AUTHORIZATION=(
-                f"Bearer {self.get_login_jwt(self.account)}"
-            )
+            HTTP_AUTHORIZATION=(f"Bearer {self.get_login_jwt(self.account)}"),
         )
         self.assertEqual(response.status_code, 200)
 
@@ -114,6 +105,6 @@ class AccountTestApiProducer(test.APITestCase, AccountMixin):
             data={"fantasy_name": "partialupdate"},
             HTTP_AUTHORIZATION=(
                 f"Bearer {self.get_jwt_acess_token_simple_user()}"
-            )
+            ),
         )
         self.assertEqual(response.status_code, 403)

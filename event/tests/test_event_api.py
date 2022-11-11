@@ -6,12 +6,11 @@ from event.tests.test_event_base import EventMixin
 
 
 class EventApiv1Test(test.APITestCase, EventMixin, AccountMixin):
-
     def setUp(self) -> None:
         self.make_image()
         self.account = self.make_account_create_user(
             email="event@user.com", username="eventusername"
-        )        
+        )
 
         self.make_event_two(self.account)
         self.event_active = self.make_event(self.account)
@@ -26,6 +25,7 @@ class EventApiv1Test(test.APITestCase, EventMixin, AccountMixin):
             "video_url": "www.you.com",
             "is_published": "true",
         }
+        self.app()
         return super().setUp()
 
     def test_event_list(self):
@@ -37,7 +37,7 @@ class EventApiv1Test(test.APITestCase, EventMixin, AccountMixin):
         self.assertEqual(len(response.data), 1)
 
     def test_event_create_with_anonymous_user(self):
-        
+
         response = self.client.post(
             reverse("event:event-list-create"),
             data=self.event_data,
@@ -67,13 +67,12 @@ class EventApiv1Test(test.APITestCase, EventMixin, AccountMixin):
             HTTP_AUTHORIZATION=f"Bearer {self.get_jwt_acess_token_simple_user()}",  # noqa: E501
         )
         self.assertEqual(response.status_code, 201)
-    
+
     def test_event_retrive_with_anonymous_user(self):
 
         response = self.client.get(
             reverse(
-                "event:event-retrieve-update",
-                args=(self.event_active.id,)
+                "event:event-retrieve-update", args=(self.event_active.id,)
             )
         )
         self.assertEqual(response.status_code, 200)
@@ -85,10 +84,10 @@ class EventApiv1Test(test.APITestCase, EventMixin, AccountMixin):
                 "event:event-retrieve-update",
                 args=(self.event_active.id,),
             ),
-            data={"name": "new name"}
+            data={"name": "new name"},
         )
         self.assertEqual(response.status_code, 401)
-    
+
     def test_event_update_with_owner_user(self):
         response = self.client.patch(
             reverse(
@@ -99,7 +98,7 @@ class EventApiv1Test(test.APITestCase, EventMixin, AccountMixin):
             HTTP_AUTHORIZATION=f"Bearer {self.get_login_jwt(self.account)}",
         )
         self.assertEqual(response.status_code, 200)
-    
+
     def test_event_update_is_not_owner(self):
         response = self.client.patch(
             reverse(

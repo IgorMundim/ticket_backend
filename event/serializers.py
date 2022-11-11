@@ -42,15 +42,10 @@ class ImageSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="event:image-retrieve-update-destroy"
     )
+
     class Meta:
         model = Image
-        fields = [
-            "id",
-            "event",
-            "image_url",
-            "alt_text",
-            "url"
-            ]
+        fields = ["id", "event", "image_url", "alt_text", "url"]
 
 
 class BasicEventSerializer(serializers.ModelSerializer):
@@ -59,12 +54,7 @@ class BasicEventSerializer(serializers.ModelSerializer):
     )
     address = serializers.StringRelatedField()
     image = serializers.StringRelatedField()
-    # event_url = serializers.HyperlinkedRelatedField(
-    #     many=False,
-    #     view_name="event:event-retrieve",
-    #     read_only=True,
-    #     source="id",
-    # )
+
 
     class Meta:
         model = Event
@@ -79,16 +69,10 @@ class BasicEventSerializer(serializers.ModelSerializer):
 
 class EventSerializer(serializers.ModelSerializer):
 
-    # address = serializers.SlugRelatedField(
-    #     many=False, read_only=True, slug_field="cep"
-    # )
-    # image = serializers.StringRelatedField()
-    # producer = serializers.StringRelatedField()
     url = serializers.HyperlinkedIdentityField(
         view_name="event:event-retrieve-update"
     )
     address = AddressSerializer(many=False)
-    # producer = ProducerSerializer(many=False)
     image = ImageSerializer(many=False)
     categories = CategorySerializer(many=True)
 
@@ -113,7 +97,6 @@ class EventSerializer(serializers.ModelSerializer):
 
 
 class EventCreateSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Event
         fields = [
@@ -165,11 +148,9 @@ class BatchSerializers(serializers.ModelSerializer):
                     "Conflict between created lots"
                 )
             return super().validate(attrs)
-        
+
         if self._context["request"]._stream.method == "PATCH":
-            raise serializers.ValidationError(
-                    "Method is not allowed"
-            )       
+            raise serializers.ValidationError("Method is not allowed")
         event_pk = self.initial_data["event"]
         id = self.instance.id
         if not Batch.objects.is_valid_change(
@@ -207,12 +188,13 @@ class LeasingSerializer(serializers.ModelSerializer):
         read_only_fields = ["sale_price", "student_price", "units_solid"]
 
     def validate_units(self, value):
-        if self._context["request"]._stream.method != "POST": 
+        if self._context["request"]._stream.method != "POST":
             leasing = Leasing.objects.filter(
-                id=self._context['request'].parser_context['kwargs']['pk']
+                id=self._context["request"].parser_context["kwargs"]["pk"]
             ).first()
             if value < leasing.units_solid:
                 raise serializers.ValidationError(
-                    'Units sold is greater than the quantity available.'
+                    "Units sold is greater than the quantity available."
                 )
         return value
+

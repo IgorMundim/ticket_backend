@@ -1,13 +1,17 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import generics
-from rest_framework.permissions import SAFE_METHODS, AllowAny, BasePermission
+from django.http import Http404
+from rest_framework import generics, permissions, status
+from rest_framework.permissions import AllowAny, BasePermission
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from account.models import Account, Address, Customer, Producer
 from account.serializers import (
     AccountSerializer,
     AddressSerializer,
+    CustomerPostSerializer,
     CustomerSerializer,
     ProducerSerializer,
+    UsersSerializer,
 )
 
 
@@ -19,6 +23,14 @@ class IsOwnerObject(BasePermission):
 class IsOwner(BasePermission):
     def has_permission(self, request, view):
         return bool(request.user and view.kwargs["pk"] == request.user.id)
+
+
+class CurrentUser(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        serializer = UsersSerializer(self.request.user)
+        return Response(serializer.data)
 
 
 class AccountCreate(generics.CreateAPIView, AllowAny):
@@ -64,10 +76,28 @@ class ProducerRetriveUpdate(generics.RetrieveUpdateAPIView, IsOwnerObject):
     permission_classes = [IsOwnerObject]
 
 
-class CustomerCreate(generics.CreateAPIView, IsOwner):
-    queryset = Customer.objects.all()
-    serializer_class = CustomerSerializer
+class CustomerCreate(APIView, IsOwner):
     permission_classes = [IsOwner]
+
+    def get_object(self, pk):
+        try:
+            return Customer.objects.get(account=pk)
+        except Customer.DoesNotExist:
+            raise Http404
+
+    def post(self, request, pk, format=None):
+        serializer = CustomerPostSerializer(
+            data=request.data, context={"request": request}
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, pk, format=None):
+        costumer = self.get_object(pk)
+        serializer = CustomerSerializer(costumer, context={"request": request})
+        return Response(serializer.data)
 
 
 class CustomerRetriveUpdate(generics.RetrieveUpdateAPIView, IsOwnerObject):

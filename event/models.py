@@ -1,10 +1,9 @@
 from typing import Any
 
+from account.models import Account
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
-
-from account.models import Account
 
 
 class Address(models.Model):
@@ -67,6 +66,13 @@ class EventManager(models.Manager):
             # .select_related("producer", "address")
         )
 
+    def get_event_by_date(self):
+        return (
+            self.filter(Q(is_published=True) & Q(date_end__gte=timezone.now()))
+            .order_by("-id")
+            .select_related("image", "address")
+        )
+
 
 class Event(models.Model):
     objects = EventManager()
@@ -76,9 +82,12 @@ class Event(models.Model):
         on_delete=models.PROTECT,
         blank=True,
         null=True,
-        )
+    )
 
-    categories = models.ManyToManyField(Category, blank=True,)
+    categories = models.ManyToManyField(
+        Category,
+        blank=True,
+    )
     image = models.OneToOneField(
         Image, on_delete=models.PROTECT, blank=True, null=True
     )

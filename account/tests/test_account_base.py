@@ -1,7 +1,14 @@
+from django.test import TestCase
+from django.utils.timezone import now, timedelta
+from oauth2_provider.models import (
+    get_access_token_model,
+    get_application_model,
+)
 
 from account.models import Account, Address, Customer, Producer
-from django.test import TestCase
-from django.urls import reverse
+
+ApplicationModel = get_application_model()
+AccessTokenModel = get_access_token_model()
 
 
 class AccountMixin:
@@ -74,7 +81,7 @@ class AccountMixin:
             state_registration=state_registration,
             municype_registration=municype_registration,
         )
-    
+
     def make_customer(
         self,
         account=None,
@@ -95,52 +102,68 @@ class AccountMixin:
         userdata = {
             "username": "username",
             "password": "@Abc12345",
-            "email": "superusercheck@user.com"
+            "email": "superusercheck@user.com",
         }
 
-        self.make_account_super_user(
+        account = self.make_account_super_user(
             username=userdata.get("username"),
             password=userdata.get("password"),
-            email=userdata.get("email")
+            email=userdata.get("email"),
         )
 
-        response = self.client.post(
-            reverse("token_obtain_pair"),
-            data={**userdata}
+        token = AccessTokenModel.objects.create(
+            user=account,
+            token="fgsfdtokstrsuper",
+            application=self.app,
+            expires=now() + timedelta(days=365),
         )
-        return response.data.get("access")
+        return token
 
     def get_jwt_acess_token_simple_user(self):
         userdata = {
             "username": "simpleuser",
             "password": "@Abc12345",
-            "email": "simpleuser@user.com"
+            "email": "simpleuser@user.com",
         }
 
-        self.make_account_create_user(
+        account = self.make_account_create_user(
             username=userdata.get("username"),
             password=userdata.get("password"),
-            email=userdata.get("email")
+            email=userdata.get("email"),
         )
-        response = self.client.post(
-            reverse("token_obtain_pair"),
-            data={**userdata}
+        token = AccessTokenModel.objects.create(
+            user=account,
+            token="tokstr",
+            application=self.app,
+            expires=now() + timedelta(days=365),
         )
-        return response.data.get("access")
+        return token
 
     def get_login_jwt(self, account):
-        userdata = {
-            "username": f"{account.username}",
-            "password": "@Abc12345",
-            "email": f"{account.email}"
-        }
-        response = self.client.post(
-            reverse("token_obtain_pair"),
-            data={**userdata}
+        token = AccessTokenModel.objects.create(
+            user=account,
+            token="tokstr",
+            application=self.app,
+            expires=now() + timedelta(days=365),
         )
-        return response.data.get("access")
+        return token
+
+    def app(self):
+        superUser = self.make_account_super_user(
+            username="superuseradm",
+            email="superuseradm@user.com",
+            password="@Abc12345",
+        )
+
+        self.app = ApplicationModel.objects.create(
+            name="app",
+            client_type=ApplicationModel.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=ApplicationModel.GRANT_CLIENT_CREDENTIALS,
+            user=superUser,
+        )
 
 
 class AccountTestBase(TestCase, AccountMixin):
     def setUp(self) -> None:
+
         return super().setUp()
