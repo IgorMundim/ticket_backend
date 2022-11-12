@@ -30,9 +30,11 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "INSECURE")
 DEBUG = True if os.environ.get("DEBUG") == "1" else False
 
 ALLOWED_HOSTS = parse_comma_sep_str_to_list(get_env_variable("ALLOWED_HOSTS"))
-CSRF_TRUSTED_ORIGINS = parse_comma_sep_str_to_list(
-    get_env_variable("CSRF_TRUSTED_ORIGINS")
-)
+
+# CSRF_TRUSTED_ORIGINS = parse_comma_sep_str_to_list(
+#     get_env_variable("CSRF_TRUSTED_ORIGINS")
+# )
+
 
 AUTH_USER_MODEL = "account.Account"
 # Application definition
@@ -49,6 +51,7 @@ INSTALLED_APPS = [
     "rest_framework_swagger",
     "drf_spectacular",
     "corsheaders",
+    "storages",
     "event",
     "account",
     "order",
@@ -59,7 +62,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -92,7 +94,12 @@ TEMPLATES = [
     },
 ]
 
-CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:3000", "http://localhost:3000"]
+# CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:3000", "http://localhost:3000"]
+
+CORS_ALLOWED_ORIGINS = parse_comma_sep_str_to_list(
+    get_env_variable("CORS_ALLOWED_ORIGINS")
+)
+
 
 CORS_ALLOW_CREDENTIALS = True
 WSGI_APPLICATION = "core.wsgi.application"
@@ -159,8 +166,6 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = BASE_DIR / "static"
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
@@ -215,3 +220,21 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     # OTHER SETTINGS
 }
+
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_CUSTOM_DOMAIN = (
+    f"{os.environ.get('AWS_STORAGE_BUCKET_NAME')}.s3.amazonaws.com"
+)
+AWS_DEFAULT_ACL = "public-read"
+AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+AWS_LOCATION = "static"
+AWS_QUERYSTRING_AUTH = False
+AWS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+}
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+STATIC_URL = f"https://{os.environ.get('AWS_S3_CUSTOM_DOMAIN')}/static/"
+MEDIA_URL = f"https://{os.environ.get('AWS_S3_CUSTOM_DOMAIN')}/media/"
