@@ -157,14 +157,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = "static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
-STATICFILES_DIRS = [
-    BASE_DIR / "base_static",
-]
-STATIC_ROOT = BASE_DIR / "static"
+
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -183,8 +179,6 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
 
 AUTHENTICATION_BACKENDS = (
     "drf_social_oauth2.backends.DjangoOAuth2",
@@ -221,20 +215,34 @@ SPECTACULAR_SETTINGS = {
     # OTHER SETTINGS
 }
 
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
-AWS_S3_CUSTOM_DOMAIN = (
-    f"{os.environ.get('AWS_STORAGE_BUCKET_NAME')}.s3.amazonaws.com"
-)
-AWS_DEFAULT_ACL = "public-read"
-AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
-AWS_LOCATION = "static"
-AWS_QUERYSTRING_AUTH = False
-AWS_HEADERS = {
-    "Access-Control-Allow-Origin": "*",
-}
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-STATIC_URL = f"https://{os.environ.get('AWS_S3_CUSTOM_DOMAIN')}/static/"
-MEDIA_URL = f"https://{os.environ.get('AWS_S3_CUSTOM_DOMAIN')}/media/"
+USE_S3 = os.getenv("USE_S3") == "TRUE"
+
+if USE_S3:
+    print("True")
+    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_CUSTOM_DOMAIN = (
+        f"{os.environ.get('AWS_STORAGE_BUCKET_NAME')}.s3.amazonaws.com"
+    )
+    AWS_DEFAULT_ACL = "public-read"
+    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+    AWS_LOCATION = "static"
+    AWS_QUERYSTRING_AUTH = False
+    AWS_HEADERS = {
+        "Access-Control-Allow-Origin": "*",
+    }
+    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    STATIC_URL = f"https://{os.environ.get('AWS_S3_CUSTOM_DOMAIN')}/static/"
+    MEDIA_URL = f"https://{os.environ.get('AWS_S3_CUSTOM_DOMAIN')}/media/"
+else:
+    print("False")
+    STATIC_URL = "static/"
+    STATIC_ROOT = BASE_DIR / "static"
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
+    STATICFILES_DIRS = [
+        BASE_DIR / "base_static",
+    ]
+
