@@ -49,10 +49,10 @@ class Banner(models.Model):
 class Footer(models.Model):
     footerHtml = models.CharField(max_length=250)
     src_img = models.ImageField(
-        max_length=200,
-        upload_to="footer/%Y/%m/%d/banner", null=True
+        max_length=200, upload_to="covers/%Y/%m/%d/footer", null=True
     )
-    alt_text = models.CharField(max_length=150,null=True)
+
+    alt_text = models.CharField(max_length=150, null=True)
 
     def __str__(self):
         return self.footerHtml

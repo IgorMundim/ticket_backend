@@ -59,7 +59,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -107,8 +106,6 @@ DATABASES = {
             "DATABASE_ENGINE", "django.db.backends.sqlite3"
         ),
         "NAME": os.environ.get("DATABASE_NAME", "db.sqlite3"),
-        # "ENGINE": "django.db.backends.sqlite3",
-        # "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
         "USER": os.environ.get("DATABASE_USER"),
         "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
         "HOST": os.environ.get("DATABASE_HOST"),
@@ -150,16 +147,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = "static/"
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
-STATICFILES_DIRS = [
-    BASE_DIR / "base_static",
-]
-STATIC_ROOT = BASE_DIR / "static"
-
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -178,8 +167,6 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
 
 AUTHENTICATION_BACKENDS = (
     "drf_social_oauth2.backends.DjangoOAuth2",
@@ -215,3 +202,27 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     # OTHER SETTINGS
 }
+STATIC_URL = "/static/"
+
+
+MEDIA_URL = "/media/"
+
+MEDIA_ROOT = BASE_DIR / "media"
+
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_CUSTOM_DOMAIN = (
+    f'{os.environ.get("AWS_STORAGE_BUCKET_NAME")}.s3.amazonaws.com'
+)
+AWS_DEFAULT_ACL = "public-read"
+AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+AWS_LOCATION = "static"
+AWS_QUERYSTRING_AUTH = False
+AWS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+}
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+STATIC_URL = f"https://{os.environ.get('AWS_S3_CUSTOM_DOMAIN')}/static/"
+MEDIA_URL = f"https://{os.environ.get('AWS_S3_CUSTOM_DOMAIN')}/media/"
