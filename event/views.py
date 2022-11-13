@@ -75,7 +75,7 @@ class CategoryRetrieveUpdate(generics.RetrieveUpdateAPIView, IsSuperUser):
 
 class EventByCategoriesList(generics.ListAPIView):
     queryset = Event.objects.all()
-    serializer_class = BasicEventSerializer
+    serializer_class = EventSerializer
 
     def get_queryset(self):
         qs = super().get_queryset()
